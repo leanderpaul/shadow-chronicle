@@ -1,0 +1,18 @@
+{
+  "framework": "angular",
+  "rewrites": [
+    {
+      "source": "/graphql",
+      "has": [
+        { "type": "host", "value": "chronicle.shadow-apps.com" },
+        { "type": "header", "key": "x-vercel-method", "value": "post" }
+      ],
+      "destination": "https://archive.shadow-apps.com/graphql/accounts"
+    },
+    {
+      "source": "/graphql",
+      "has": [{ "type": "header", "key": "x-vercel-method", "value": "post" }],
+      "destination": "https://archive.dev.shadow-apps.com/graphql/accounts"
+    }
+  ]
+}

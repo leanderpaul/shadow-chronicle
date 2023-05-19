@@ -1,0 +1,7 @@
+{
+  "/graphql": {
+    "target": "https://archive.dev.shadow-apps.com/graphql/chronicle",
+    "secure": true,
+    "changeOrigin": true
+  }
+}
