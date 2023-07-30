@@ -20,7 +20,7 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
-            "styles": ["@angular/material/prebuilt-themes/purple-green.css", "src/styles.scss"],
+            "styles": ["src/styles.scss"],
             "scripts": []
           },
           "configurations": {
@@ -44,8 +44,15 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": { "port": 3000, "proxyConfig": "src/proxy.conf.json" },
-          "configurations": { "development": { "browserTarget": "shadow-chronicle:build:development" } },
+          "options": {
+            "port": 3000,
+            "proxyConfig": "src/proxy.conf.json",
+            "publicHost": "local.dev.shadow-apps.com",
+            "ssl": true
+          },
+          "configurations": {
+            "development": { "browserTarget": "shadow-chronicle:build:development" }
+          },
           "defaultConfiguration": "development"
         },
         "test": {
@@ -67,6 +74,7 @@
     }
   },
   "cli": {
-    "schematicCollections": ["@angular-eslint/schematics"]
+    "schematicCollections": ["@angular-eslint/schematics"],
+    "analytics": "b4333353-1edf-47a0-86cc-021948138135"
   }
 }

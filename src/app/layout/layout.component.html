@@ -1,0 +1,36 @@
+<mat-sidenav-container>
+  <mat-sidenav mode="side" opened>
+    <img routerLink="/" src="/assets/images/logo.webp" alt="Chronicle" class="cursor-pointer mx-auto" />
+    <div class="mt-3">
+      <app-sidenav-item *ngFor="let item of getNavItems()" [item]="item"></app-sidenav-item>
+    </div>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-toolbar>
+      <img *ngIf="user.imageUrl" [matMenuTriggerFor]="avatarDropdown" class="avatar" src="{{ user.imageUrl }}" alt="{{ user.name }}" width="36px" />
+      <mat-icon *ngIf="!user.imageUrl" [matMenuTriggerFor]="avatarDropdown" class="avatar">account_circle</mat-icon>
+      <mat-menu class="dropdown" #avatarDropdown="matMenu">
+        <div class="flex-center m-3">
+          <img *ngIf="user.imageUrl" class="user-logo" src="{{ user.imageUrl }}" alt="{{ user.name }}" width="36px" />
+          <mat-icon *ngIf="!user.imageUrl" class="user-logo">account_circle</mat-icon>
+          <div class="ml-3">
+            <div>{{ user.name }}</div>
+            <div class="text-sm disabled">{{ user.email }}</div>
+          </div>
+        </div>
+        <mat-divider></mat-divider>
+        <a class="!mt-1" mat-menu-item href="{{ manageAccountUrl }}">
+          <mat-icon>manage_accounts</mat-icon>
+          <span>Manage your Shadow Account</span>
+        </a>
+        <a mat-menu-item href="{{ logoutUrl }}">
+          <mat-icon>logout</mat-icon>
+          <span>Sign Out</span>
+        </a>
+      </mat-menu>
+    </mat-toolbar>
+    <div class="content">
+      <ng-content></ng-content>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,3 +1,90 @@
+@use '@angular/material' as mat;
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@include mat.core();
+
+$primary: (
+  50: #efe5f7,
+  100: #d7beeb,
+  200: #bc92de,
+  300: #a166d1,
+  400: #8c46c7,
+  500: #7825bd,
+  600: #7021b7,
+  700: #651bae,
+  800: #5b16a6,
+  900: #480d98,
+  A100: #ddc8ff,
+  A200: #bd95ff,
+  A400: #9d62ff,
+  A700: #8d48ff,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #ffffff,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #ffffff,
+  ),
+);
+
+$accent: (
+  50: #edf8e4,
+  100: #d1edba,
+  200: #b3e18d,
+  300: #94d45f,
+  400: #7dcb3c,
+  500: #66c21a,
+  600: #5ebc17,
+  700: #53b413,
+  800: #49ac0f,
+  900: #389f08,
+  A100: #d9ffcb,
+  A200: #b3ff98,
+  A400: #8dff65,
+  A700: #7bff4c,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #000000,
+    600: #000000,
+    700: #000000,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #000000,
+  ),
+);
+
+$theme: mat.define-dark-theme(
+  (
+    color: (
+      primary: mat.define-palette($primary, 500),
+      accent: mat.define-palette($accent, 500),
+    ),
+    typography: mat.define-typography-config(),
+    density: 0,
+  )
+);
+
+@include mat.all-component-themes($theme);
+
 html,
 body {
   height: 100%;
@@ -6,4 +93,19 @@ body {
 body {
   margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dropdown {
+  max-width: 350px !important;
+}
+
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }

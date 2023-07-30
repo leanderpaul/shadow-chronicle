@@ -1,0 +1,8 @@
+<button class="nav-item" [ngClass]="getClassList()" (click)="handleClick()" (keypress)="handleClick()">
+  <mat-icon [fontSet]="getFontSet()">{{ item.icon }}</mat-icon>
+  <span class="ml-2">{{ item.name }}</span>
+  <mat-icon *ngIf="hasChildren()" [ngClass]="isOpen ? 'inverted' : ''" class="ml-auto">expand_more</mat-icon>
+</button>
+<div class="navitem-children" [ngClass]="isOpen ? '' : '!max-h-0'">
+  <app-sidenav-item *ngFor="let item of getChildren()" [item]="item"></app-sidenav-item>
+</div>

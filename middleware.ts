@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { next } from '@vercel/edge';
+import { next, rewrite } from '@vercel/edge';
 
 /**
  * Importing user defined packages
@@ -14,29 +14,43 @@ import { next } from '@vercel/edge';
 interface User {
   uid: string;
   email: string;
+  name: string;
   verified: boolean;
 }
 
 /**
  * Declaring the constants
  */
-const ACCOUNTS_GRAPHQL_ENDPOINT = process.env['ACCOUNTS_GRAPHQL_ENDPOINT'] || 'https://archive.dev.shadow-apps.com/graphql/accounts';
-const ACCOUNTS_DOMAIN = process.env['ACCOUNTS_DOMAIN'] || 'https://accounts.dev.shadow-apps.com';
+const SHADOW_ARCHIVE_HOSTNAME = process.env.SHADOW_ARCHIVE_HOSTNAME || 'archive.dev.shadow-apps.com';
+const ACCOUNTS_DOMAIN = process.env.ACCOUNTS_DOMAIN || 'https://accounts.dev.shadow-apps.com';
 
-async function getUser(cookie: string): Promise<User | null> {
-  const query = 'query GetCurrentUser { viewer { uid email verified } }';
-  const body = JSON.stringify({ query });
-  const headers = { cookie, 'Content-Type': 'application/json' };
-  const response = await fetch(ACCOUNTS_GRAPHQL_ENDPOINT, { method: 'post', headers, body });
-  const resBody = await response.json();
-  return resBody.data?.viewer || null;
+async function getCurrentUser(headers: Headers): Promise<User | null> {
+  if (!headers.has('cookie')) return null;
+  headers.set('x-shadow-service', 'chronicle');
+  const response = await fetch(`https://${SHADOW_ARCHIVE_HOSTNAME}/api/user`, { headers });
+  const body = await response.json();
+  return body.uid ? body : null;
 }
 
 export default async function middleware(request: Request): Promise<Response> {
-  if (request.url.includes('.') || process.env['NODE_ENV'] === 'development') return next();
-  if (request.url === '/graphql') return next({ headers: { 'x-vercel-method': request.method } });
-  const cookie = request.headers.get('cookie');
-  const user = cookie ? await getUser(cookie) : null;
-  if (user) return user.verified ? next() : Response.redirect(ACCOUNTS_DOMAIN + '/verify');
-  return Response.redirect(ACCOUNTS_DOMAIN + '/auth/signin');
+  /** skip middleware, if serving static resource such as .js, .css, .png, etc */
+  if (request.url.search('[a-zA-Z0-9]\\.[a-z]{1,5}$') > 0) return next();
+
+  /** Proxy graphql requests */
+  if (request.method === 'POST' && request.url === '/graphql') {
+    const headers = new Headers(request.headers);
+    headers.set('x-shadow-service', 'chronicle');
+    return rewrite(`https://${SHADOW_ARCHIVE_HOSTNAME}/graphql/chronicle`, { request: { headers } });
+  }
+
+  if (request.method === 'GET' && request.url === '/api/user') {
+    const user = await getCurrentUser(request.headers);
+    return new Response(JSON.stringify(user), { headers: { 'content-type': 'application/json' } });
+  }
+
+  /** proceed if user is authenticated and email address is verified, else redirect to accounts */
+  const user = await getCurrentUser(request.headers);
+  if (user?.verified) return next();
+  const url = user ? '/verify' : '/auth/signin';
+  return Response.redirect(ACCOUNTS_DOMAIN + url);
 }

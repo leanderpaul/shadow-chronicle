@@ -3,5 +3,10 @@
     "target": "https://archive.dev.shadow-apps.com/graphql/chronicle",
     "secure": true,
     "changeOrigin": true
+  },
+  "/api": {
+    "target": "https://archive.dev.shadow-apps.com",
+    "secure": true,
+    "changeOrigin": true
   }
 }

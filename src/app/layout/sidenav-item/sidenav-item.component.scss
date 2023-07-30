@@ -1,0 +1,34 @@
+@import 'src/styles.scss';
+
+$active-color: map-get($primary, 500);
+
+.nav-item {
+  display: flex;
+  padding: 12px 12px 12px 24px;
+  cursor: pointer;
+  width: 100%;
+
+  &.active {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-right: 2px solid $active-color;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+}
+
+mat-icon {
+  transition: transform 0.35s;
+  color: #555;
+
+  &.inverted {
+    transform: rotate(180deg);
+  }
+}
+
+.navitem-children {
+  overflow: hidden;
+  transition: max-height 0.35s ease-out;
+  max-height: 500px;
+}

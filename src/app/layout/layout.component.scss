@@ -1,0 +1,37 @@
+mat-sidenav-container {
+  height: 100vh;
+  background-color: #121212;
+}
+
+mat-sidenav {
+  width: 250px;
+  color: #999;
+  background-color: #292929;
+}
+
+mat-toolbar {
+  background-color: #292929;
+  position: sticky;
+  padding: 0px 24px;
+  top: 0;
+}
+
+.content {
+  padding: 24px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 36px;
+  border-radius: 50%;
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.user-logo {
+  width: 50px;
+  height: 50px;
+  font-size: 50px;
+  border-radius: 50%;
+}
