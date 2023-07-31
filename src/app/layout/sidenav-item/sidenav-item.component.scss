@@ -4,13 +4,34 @@ $active-color: map-get($primary, 500);
 
 .nav-item {
   display: flex;
-  padding: 12px 12px 12px 24px;
+  padding: 12px 30px;
   cursor: pointer;
-  width: 100%;
+  width: 250px;
+
+  &.collapsed {
+    width: 60px;
+    padding: 15px 0px;
+
+    mat-icon {
+      margin: auto;
+    }
+
+    span {
+      display: none;
+    }
+
+    &.active {
+      border: none;
+
+      mat-icon {
+        color: $active-color;
+      }
+    }
+  }
 
   &.active {
     background-color: rgba(255, 255, 255, 0.04);
-    border-right: 2px solid $active-color;
+    border-right: 3px solid $active-color;
   }
 
   &:hover {
@@ -19,16 +40,5 @@ $active-color: map-get($primary, 500);
 }
 
 mat-icon {
-  transition: transform 0.35s;
   color: #555;
-
-  &.inverted {
-    transform: rotate(180deg);
-  }
-}
-
-.navitem-children {
-  overflow: hidden;
-  transition: max-height 0.35s ease-out;
-  max-height: 500px;
 }

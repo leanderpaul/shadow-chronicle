@@ -2,11 +2,11 @@
  * Importing npm packages
  */
 import { CommonModule } from '@angular/common';
-import { Component, type OnInit } from '@angular/core';
+import { Component, ViewChild, type OnInit } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenavModule, MatSidenavContent } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 
@@ -24,30 +24,17 @@ import { type SidenavItem, SidenavItemComponent } from './sidenav-item';
 /**
  * Declaring the constants
  */
-
+const NAV_STATE_KEY = 'shadow:chronicle:side-nav';
+const initialNavState = localStorage.getItem(NAV_STATE_KEY) !== 'collapsed';
 const navItems: SidenavItem[] = [
   { name: 'Dashboard', link: '/', icon: 'home' },
-  {
-    name: 'Expenses',
-    icon: 'attach_money',
-    children: [
-      { name: 'List Expenses', link: '/expenses' },
-      { name: 'Add Expense', link: '/expenses/add' },
-    ],
-  },
-  {
-    name: 'Memoir',
-    icon: 'archive_outlined',
-    children: [
-      { name: 'Insight', link: '/memoir' },
-      { name: 'Sleep', link: '/memoir/sleep' },
-      { name: 'Exercise', link: '/memoir/exercise' },
-      { name: 'Food', link: '/memoir/food' },
-      { name: 'Activity', link: '/memoir/activity' },
-      { name: 'Diary', link: '/memoir/diary' },
-      { name: 'Events', link: '/memoir/events' },
-    ],
-  },
+  { name: 'Expenses', icon: 'attach_money', link: '/expenses' },
+  { name: 'Sleep', icon: 'hotel', link: '/sleep' },
+  { name: 'Exercise', icon: 'fitness_center', link: '/exercise' },
+  { name: 'Food', icon: 'restaurant', link: '/food' },
+  { name: 'Activity', icon: 'work', link: '/activity' },
+  { name: 'Diary', icon: 'description', link: '/diary' },
+  { name: 'Events', icon: 'event', link: '/events' },
 ];
 
 @Component({
@@ -58,9 +45,12 @@ const navItems: SidenavItem[] = [
   standalone: true,
 })
 export class LayoutComponent implements OnInit {
+  @ViewChild(MatSidenavContent) sidenav: MatSidenavContent;
+
   user: User;
   logoutUrl: string;
   manageAccountUrl: string;
+  isSidenavOpen = initialNavState;
 
   constructor(private readonly authService: AuthService) {
     const hostname = window.location.hostname;
@@ -76,5 +66,13 @@ export class LayoutComponent implements OnInit {
 
   getNavItems(): SidenavItem[] {
     return navItems;
+  }
+
+  toggleSidenav(): void {
+    this.isSidenavOpen = !this.isSidenavOpen;
+    const element = this.sidenav.getElementRef().nativeElement;
+    element.style.marginLeft = this.isSidenavOpen ? '250px' : '60px';
+    element.style.transition = 'margin-left 0.2s ease-in-out';
+    localStorage.setItem(NAV_STATE_KEY, this.isSidenavOpen ? 'expanded' : 'collapsed');
   }
 }

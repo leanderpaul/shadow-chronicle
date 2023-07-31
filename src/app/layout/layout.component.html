@@ -1,8 +1,13 @@
 <mat-sidenav-container>
-  <mat-sidenav mode="side" opened>
+  <mat-sidenav mode="side" opened disableClose [ngClass]="isSidenavOpen ? '' : 'collapsed'">
     <img routerLink="/" src="/assets/images/logo.webp" alt="Chronicle" class="cursor-pointer mx-auto" />
-    <div class="mt-3">
-      <app-sidenav-item *ngFor="let item of getNavItems()" [item]="item"></app-sidenav-item>
+    <div [ngClass]="isSidenavOpen ? 'mt-5' : 'mt-2'">
+      <app-sidenav-item *ngFor="let item of getNavItems()" [item]="item" [collapsed]="!isSidenavOpen"></app-sidenav-item>
+    </div>
+    <div class="mt-auto">
+      <button class="nav-toggle" (click)="toggleSidenav()" (onkeypress)="toggleSidenav()">
+        <mat-icon>{{ isSidenavOpen ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+      </button>
     </div>
   </mat-sidenav>
   <mat-sidenav-content>
