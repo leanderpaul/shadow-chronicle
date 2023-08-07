@@ -21,13 +21,13 @@ interface User {
 /**
  * Declaring the constants
  */
-const SHADOW_ARCHIVE_HOSTNAME = process.env.SHADOW_ARCHIVE_HOSTNAME || 'archive.dev.shadow-apps.com';
-const ACCOUNTS_DOMAIN = process.env.ACCOUNTS_DOMAIN || 'https://accounts.dev.shadow-apps.com';
+const SHADOW_ARCHIVE_DOMAIN = process.env.SHADOW_ARCHIVE_DOMAIN || 'archive.dev.shadow-apps.com';
+const SHADOW_ACCOUNTS_DOMAIN = process.env.SHADOW_ACCOUNTS_DOMAIN || 'accounts.dev.shadow-apps.com';
 
 async function getCurrentUser(headers: Headers): Promise<User | null> {
   if (!headers.has('cookie')) return null;
   headers.set('x-shadow-service', 'chronicle');
-  const response = await fetch(`https://${SHADOW_ARCHIVE_HOSTNAME}/api/user`, { headers });
+  const response = await fetch(`https://${SHADOW_ARCHIVE_DOMAIN}/api/user`, { headers });
   const body = await response.json();
   return body.uid ? body : null;
 }
@@ -40,7 +40,7 @@ export default async function middleware(request: Request): Promise<Response> {
   if (request.method === 'POST' && request.url === '/graphql') {
     const headers = new Headers(request.headers);
     headers.set('x-shadow-service', 'chronicle');
-    return rewrite(`https://${SHADOW_ARCHIVE_HOSTNAME}/graphql/chronicle`, { request: { headers } });
+    return rewrite(`https://${SHADOW_ARCHIVE_DOMAIN}/graphql/chronicle`, { request: { headers } });
   }
 
   if (request.method === 'GET' && request.url === '/api/user') {
@@ -51,6 +51,5 @@ export default async function middleware(request: Request): Promise<Response> {
   /** proceed if user is authenticated and email address is verified, else redirect to accounts */
   const user = await getCurrentUser(request.headers);
   if (user?.verified) return next();
-  const url = user ? '/verify' : '/auth/signin';
-  return Response.redirect(ACCOUNTS_DOMAIN + url);
+  return Response.redirect(`https://${SHADOW_ACCOUNTS_DOMAIN}/${user ? 'verify' : 'auth/signin'}`);
 }

@@ -1,0 +1,30 @@
+mat-card-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  color: #bbb;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: rgba(150, 150, 150, 0.2) 0px 5px 15px;
+  }
+
+  .category {
+    margin-left: 10px;
+    width: 200px;
+  }
+
+  .store {
+    width: 400px;
+  }
+}
+
+mat-icon {
+  &.action {
+    cursor: pointer;
+
+    &:hover {
+      color: white;
+    }
+  }
+}

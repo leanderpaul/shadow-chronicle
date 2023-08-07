@@ -1,0 +1,39 @@
+<div class="flex justify-between">
+  <h1 class="text-2xl">Expenses</h1>
+  <div>
+    <button class="mr-4" mat-button (click)="displayErrorMessage('Filter')">
+      <mat-icon matBadge="8" matBadgePosition="before">filter_list</mat-icon>
+      <span>Filter</span>
+    </button>
+    <button mat-raised-button color="primary" (click)="displayErrorMessage('Add expense')">Add Expense</button>
+  </div>
+</div>
+
+<div *ngIf="expenseConnection | withLoading | async as result">
+  <div class="flex justify-center my-24" *ngIf="result.loading || refecting; else loaded">
+    <mat-spinner strokeWidth="2" diameter="50"></mat-spinner>
+  </div>
+  <ng-template #loaded>
+    <h1 *ngIf="result.error">Error: {{ result.error }}</h1>
+    <div *ngIf="result.value">
+      <div class="my-3" *ngFor="let group of groupedExpenses">
+        <div class="p-3 flex justify-between text-gray-300">
+          <div>{{ group.label }}</div>
+          <div class="mr-9 flex items-center">
+            <mat-icon class="icon">{{ currency | iconize: 'currency' }}</mat-icon>
+            <span>{{ group.total / 100 }}</span>
+          </div>
+        </div>
+        <app-expense-list (click)="displayErrorMessage('View expense details')" [expenses]="group.expenses"></app-expense-list>
+      </div>
+      <mat-paginator
+        class="!bg-inherit"
+        (page)="handlePageChange($event)"
+        [length]="result.value.totalCount"
+        [pageIndex]="page.pageIndex"
+        [pageSize]="page.pageSize"
+        [pageSizeOptions]="[20, 50, 100]"
+      ></mat-paginator>
+    </div>
+  </ng-template>
+</div>

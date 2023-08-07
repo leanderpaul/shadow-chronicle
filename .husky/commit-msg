@@ -2,5 +2,6 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 npm run lint || (echo "Run 'npm run lint:fix' to fix all linting errors" && exit 0)
+npm run build
 
 npx --no -- commitlint --edit ${1}
