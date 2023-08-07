@@ -2,7 +2,8 @@
   "/graphql": {
     "target": "https://archive.dev.shadow-apps.com/graphql/chronicle",
     "secure": true,
-    "changeOrigin": true
+    "changeOrigin": true,
+    "pathRewrite": { "^/graphql": "" }
   },
   "/api": {
     "target": "https://archive.dev.shadow-apps.com",

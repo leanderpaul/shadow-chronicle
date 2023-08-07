@@ -30,6 +30,11 @@ mat-toolbar {
   position: sticky;
   padding: 0px 24px;
   top: 0;
+  z-index: 100;
+}
+
+mat-sidenav-content {
+  scroll-behavior: smooth;
 }
 
 .content {

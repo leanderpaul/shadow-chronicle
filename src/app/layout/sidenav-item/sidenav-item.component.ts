@@ -2,9 +2,9 @@
  * Importing npm packages
  */
 import { CommonModule } from '@angular/common';
-import { Component, Input, type OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
 /**
  * Importing user defined packages

@@ -1,0 +1,11 @@
+<mat-card class="mb-3">
+  <mat-card-content>
+    <mat-icon>{{ expense.category | iconize : 'category' }}</mat-icon>
+    <div class="category">{{ expense.category | capitalize }}</div>
+    <div class="store">{{ expense.store }}</div>
+    <div class="level">{{ expense.level | capitalize }}</div>
+    <mat-icon class="ml-auto icon">{{ expense.currency | iconize : 'currency' }}</mat-icon>
+    <div>{{ total }}</div>
+    <mat-icon class="action ml-2">more_vert</mat-icon>
+  </mat-card-content>
+</mat-card>

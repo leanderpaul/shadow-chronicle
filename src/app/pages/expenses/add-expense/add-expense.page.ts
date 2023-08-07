@@ -17,10 +17,10 @@ import { Component } from '@angular/core';
  */
 
 @Component({
-  selector: 'app-not-found',
+  selector: 'app-add-expense',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './not-found.component.html',
-  styleUrls: ['./not-found.component.scss'],
+  templateUrl: './add-expense.page.html',
+  styleUrls: ['./add-expense.page.scss'],
 })
-export class NotFoundComponent {}
+export class AddExpensePage {}

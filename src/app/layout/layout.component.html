@@ -10,7 +10,7 @@
       </button>
     </div>
   </mat-sidenav>
-  <mat-sidenav-content>
+  <mat-sidenav-content id="app-content">
     <mat-toolbar>
       <img *ngIf="user.imageUrl" [matMenuTriggerFor]="avatarDropdown" class="avatar" src="{{ user.imageUrl }}" alt="{{ user.name }}" width="36px" />
       <mat-icon *ngIf="!user.imageUrl" [matMenuTriggerFor]="avatarDropdown" class="avatar">account_circle</mat-icon>

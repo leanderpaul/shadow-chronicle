@@ -6,7 +6,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 /**
  * Importing user defined packages
  */
-import { NotFoundComponent } from './not-found.component';
+import { ExpensesPage } from './expenses.page';
 
 /**
  * Defining types
@@ -16,13 +16,13 @@ import { NotFoundComponent } from './not-found.component';
  * Declaring the constants
  */
 
-describe('NotFoundComponent', () => {
-  let component: NotFoundComponent;
-  let fixture: ComponentFixture<NotFoundComponent>;
+describe('ExpensesComponent', () => {
+  let component: ExpensesPage;
+  let fixture: ComponentFixture<ExpensesPage>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [NotFoundComponent] });
-    fixture = TestBed.createComponent(NotFoundComponent);
+    TestBed.configureTestingModule({ imports: [ExpensesPage] });
+    fixture = TestBed.createComponent(ExpensesPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

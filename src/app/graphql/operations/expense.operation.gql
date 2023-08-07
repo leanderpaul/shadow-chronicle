@@ -1,0 +1,50 @@
+query ListExpenses($filter: ExpenseFilter, $page: PageInput, $sortOrder: SortOrder) {
+  expenses(filter: $filter, page: $page, sortOrder: $sortOrder) {
+    totalCount
+    items {
+      eid
+      date
+      level
+      store
+      category
+      currency
+      total
+    }
+  }
+}
+
+query GetInsight($year: Int!, $month: Int!, $currency: Currency!, $levels: [ExpenseVisibiltyLevel!]) {
+  insight(year: $year, month: $month) {
+    expense(currency: $currency, levels: $levels) {
+      total
+      billCount
+      categories {
+        name
+        total
+        billCount
+      }
+    }
+  }
+}
+
+query GetExpense($eid: ID!) {
+  expense(eid: $eid) {
+    eid
+    bid
+    date
+    level
+    time
+    store
+    storeLoc
+    category
+    currency
+    paymentMethod
+    desc
+    items {
+      name
+      price
+      qty
+    }
+    total
+  }
+}

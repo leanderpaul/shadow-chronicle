@@ -2,18 +2,18 @@
  * Importing npm packages
  */
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild, type OnInit } from '@angular/core';
+import { Component, type OnInit, ViewChild } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule, MatSidenavContent } from '@angular/material/sidenav';
+import { MatSidenavContent, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 
 /**
  * Importing user defined packages
  */
-import { AuthService, type User } from '@app/services';
+import { AuthService, type User } from '@app/shared/services';
 
 import { type SidenavItem, SidenavItemComponent } from './sidenav-item';
 
