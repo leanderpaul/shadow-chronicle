@@ -33,17 +33,19 @@ async function getCurrentUser(headers: Headers): Promise<User | null> {
 }
 
 export default async function middleware(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+
   /** skip middleware, if serving static resource such as .js, .css, .png, etc */
-  if (request.url.search('[a-zA-Z0-9]\\.[a-z]{1,5}$') > 0) return next();
+  if (url.pathname.search('[a-zA-Z0-9]\\.[a-z]{1,5}$') > 0) return next();
 
   /** Proxy graphql requests */
-  if (request.method === 'POST' && request.url === '/graphql') {
+  if (request.method === 'POST' && url.pathname === '/graphql') {
     const headers = new Headers(request.headers);
     headers.set('x-shadow-service', 'chronicle');
     return rewrite(`https://${SHADOW_ARCHIVE_DOMAIN}/graphql/chronicle`, { request: { headers } });
   }
 
-  if (request.method === 'GET' && request.url === '/api/user') {
+  if (request.method === 'GET' && url.pathname === '/api/user') {
     const user = await getCurrentUser(request.headers);
     return new Response(JSON.stringify(user), { headers: { 'content-type': 'application/json' } });
   }
