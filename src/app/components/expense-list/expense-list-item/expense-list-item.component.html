@@ -5,7 +5,7 @@
     <div class="store">{{ expense.store }}</div>
     <div class="level">{{ expense.level | capitalize }}</div>
     <mat-icon class="ml-auto icon">{{ expense.currency | iconize : 'currency' }}</mat-icon>
-    <div>{{ total }}</div>
+    <div>{{ total.toFixed(2) }}</div>
     <mat-icon class="action ml-2">more_vert</mat-icon>
   </mat-card-content>
 </mat-card>

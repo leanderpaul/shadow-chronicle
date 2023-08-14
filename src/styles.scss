@@ -90,13 +90,16 @@ body {
   height: 100%;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1 {
   color: #ddd;
+}
+
+h2 {
+  color: #ccc;
+}
+
+h3 {
+  color: #bbb;
 }
 
 body {
@@ -126,6 +129,7 @@ body {
 }
 
 .icon {
+  color: #aaa;
   font-size: 16px !important;
   width: 16px !important;
   height: 16px !important;
@@ -134,4 +138,20 @@ body {
 .mat-mdc-paginator-page-size-label,
 .mat-mdc-paginator-range-label {
   color: #aaa !important;
+}
+
+.mdc-notched-outline__notch {
+  border-right: none;
+}
+
+.text {
+  color: #aaa;
+}
+
+.success-snackbar .mdc-snackbar__surface {
+  background-color: #17513f !important;
+
+  & * {
+    color: #ccc !important;
+  }
 }

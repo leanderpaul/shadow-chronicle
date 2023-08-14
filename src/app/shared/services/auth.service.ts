@@ -3,7 +3,7 @@
  */
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, type Observable, distinctUntilChanged, shareReplay, tap } from 'rxjs';
+import { BehaviorSubject, Observable, delay, distinctUntilChanged, repeat, shareReplay, tap } from 'rxjs';
 
 /**
  * Importing user defined packages
@@ -18,6 +18,7 @@ export interface User {
   email: string;
   verified: boolean;
   imageUrl?: string;
+  csrfToken: string;
 }
 
 /**
@@ -26,9 +27,14 @@ export interface User {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private userSubject = new BehaviorSubject<User>({ uid: '', name: '', email: '', verified: false });
+  private userSubject = new BehaviorSubject<User>({ uid: '', name: '', email: '', verified: false, csrfToken: '' });
 
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: HttpClient) {
+    this.httpClient
+      .get<User>('/api/user?csrf=true')
+      .pipe(tap({ next: user => this.userSubject.next(user), error: () => this.redirectToLogin() }), delay(60 * 60 * 1000), repeat())
+      .subscribe();
+  }
 
   private redirectToLogin(): never {
     const hostname = window.location.hostname;
@@ -38,11 +44,11 @@ export class AuthService {
     throw new Error('Redirecting to login');
   }
 
-  verifyUser(): Observable<User> {
-    return this.httpClient.get<User>('/api/user').pipe(tap({ next: user => this.userSubject.next(user), error: () => this.redirectToLogin() }), shareReplay(1));
+  getUser(): Observable<User> {
+    return this.userSubject.asObservable().pipe(shareReplay(1), distinctUntilChanged());
   }
 
-  getUser(): Observable<User> {
-    return this.userSubject.asObservable().pipe(distinctUntilChanged());
+  getCSRFToken(): string {
+    return this.userSubject.value.csrfToken;
   }
 }

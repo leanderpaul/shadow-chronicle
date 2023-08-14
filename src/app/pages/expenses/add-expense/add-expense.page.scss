@@ -1,0 +1,65 @@
+form {
+  margin-bottom: 30px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+mat-card {
+  background-color: #292929;
+}
+
+.delete {
+  margin-left: 30px;
+
+  &:hover > mat-icon {
+    color: #ff0000;
+  }
+
+  &:disabled > mat-icon {
+    color: #666;
+  }
+}
+
+.item-actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0px 10px;
+}
+
+.expense-actions {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+
+  & > h3 {
+    flex-grow: 1;
+    text-align: right;
+  }
+
+  & > .total {
+    padding-right: 88px;
+    width: calc(17%);
+    text-align: right;
+  }
+
+  & > button {
+    width: 150px;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+
+  & > button {
+    width: 150px;
+    margin-left: 20px;
+  }
+}

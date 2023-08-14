@@ -24,10 +24,10 @@ interface User {
 const SHADOW_ARCHIVE_DOMAIN = process.env.SHADOW_ARCHIVE_DOMAIN || 'archive.dev.shadow-apps.com';
 const SHADOW_ACCOUNTS_DOMAIN = process.env.SHADOW_ACCOUNTS_DOMAIN || 'accounts.dev.shadow-apps.com';
 
-async function getCurrentUser(headers: Headers): Promise<User | null> {
+async function getCurrentUser(headers: Headers, query: string = ''): Promise<User | null> {
   if (!headers.has('cookie')) return null;
   headers.set('x-shadow-service', 'chronicle');
-  const response = await fetch(`https://${SHADOW_ARCHIVE_DOMAIN}/api/user`, { headers });
+  const response = await fetch(`https://${SHADOW_ARCHIVE_DOMAIN}/api/user?${query}`, { headers });
   const body = await response.json();
   return body.uid ? body : null;
 }
@@ -46,7 +46,7 @@ export default async function middleware(request: Request): Promise<Response> {
   }
 
   if (request.method === 'GET' && url.pathname === '/api/user') {
-    const user = await getCurrentUser(request.headers);
+    const user = await getCurrentUser(request.headers, url.searchParams.toString());
     return new Response(JSON.stringify(user), { headers: { 'content-type': 'application/json' } });
   }
 

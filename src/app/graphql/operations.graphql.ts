@@ -30,11 +30,11 @@ export type Activity = {
 };
 
 export enum ActivityType {
-  Anime = 'ANIME',
-  Coding = 'CODING',
-  Movie = 'MOVIE',
-  Video = 'VIDEO',
-  Webnovel = 'WEBNOVEL',
+  ANIME = 'ANIME',
+  CODING = 'CODING',
+  MOVIE = 'MOVIE',
+  VIDEO = 'VIDEO',
+  WEBNOVEL = 'WEBNOVEL',
 }
 
 export type AddExpenseInput = {
@@ -110,19 +110,19 @@ export type Expense = {
 
 /** Supported expense categories */
 export enum ExpenseCategory {
-  Bills = 'BILLS',
-  Charity = 'CHARITY',
-  EatingOut = 'EATING_OUT',
-  Entertainment = 'ENTERTAINMENT',
-  Family = 'FAMILY',
-  General = 'GENERAL',
-  Gifts = 'GIFTS',
-  Groceries = 'GROCERIES',
-  Holidays = 'HOLIDAYS',
-  PersonalCare = 'PERSONAL_CARE',
-  Shopping = 'SHOPPING',
-  Transport = 'TRANSPORT',
-  Unknown = 'UNKNOWN',
+  BILLS = 'BILLS',
+  CHARITY = 'CHARITY',
+  EATING_OUT = 'EATING_OUT',
+  ENTERTAINMENT = 'ENTERTAINMENT',
+  FAMILY = 'FAMILY',
+  GENERAL = 'GENERAL',
+  GIFTS = 'GIFTS',
+  GROCERIES = 'GROCERIES',
+  HOLIDAYS = 'HOLIDAYS',
+  PERSONAL_CARE = 'PERSONAL_CARE',
+  SHOPPING = 'SHOPPING',
+  TRANSPORT = 'TRANSPORT',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export type ExpenseCategoryInsight = {
@@ -175,9 +175,9 @@ export type ExpenseItemInput = {
 
 /** The different visibility levels */
 export enum ExpenseVisibiltyLevel {
-  Disguise = 'DISGUISE',
-  Hidden = 'HIDDEN',
-  Standard = 'STANDARD',
+  DISGUISE = 'DISGUISE',
+  HIDDEN = 'HIDDEN',
+  STANDARD = 'STANDARD',
 }
 
 export type Food = {
@@ -329,8 +329,8 @@ export type Sleep = {
 };
 
 export enum SortOrder {
-  Asc = 'ASC',
-  Desc = 'DESC',
+  ASC = 'ASC',
+  DESC = 'DESC',
 }
 
 export type UpdateExpenseInput = {
@@ -410,6 +410,16 @@ export type GetExpenseQuery = {
     items: Array<{ name: string; price: number; qty: number }>;
   } | null;
 };
+
+export type GetUserMetadataQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetUserMetadataQuery = { metadata: { deviation: number; paymentMethods: Array<string> } };
+
+export type AddExpenseMutationVariables = Exact<{
+  expense: AddExpenseInput;
+}>;
+
+export type AddExpenseMutation = { addExpense: { eid: string } };
 
 export const ListExpensesDocument = gql`
   query ListExpenses($filter: ExpenseFilter, $page: PageInput, $sortOrder: SortOrder) {
@@ -493,6 +503,43 @@ export const GetExpenseDocument = gql`
 })
 export class GetExpenseGQL extends Apollo.Query<GetExpenseQuery, GetExpenseQueryVariables> {
   override document = GetExpenseDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const GetUserMetadataDocument = gql`
+  query GetUserMetadata {
+    metadata {
+      deviation
+      paymentMethods
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: 'root',
+})
+export class GetUserMetadataGQL extends Apollo.Query<GetUserMetadataQuery, GetUserMetadataQueryVariables> {
+  override document = GetUserMetadataDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const AddExpenseDocument = gql`
+  mutation AddExpense($expense: AddExpenseInput!) {
+    addExpense(input: $expense) {
+      eid
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AddExpenseGQL extends Apollo.Mutation<AddExpenseMutation, AddExpenseMutationVariables> {
+  override document = AddExpenseDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);

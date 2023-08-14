@@ -9,6 +9,7 @@ const config: CodegenConfig = {
       plugins: ['typescript', 'typescript-operations', 'typescript-apollo-angular'],
       config: {
         addExplicitOverride: true,
+        namingConvention: { enumValues: 'keep' },
         skipTypename: true,
         useTypeImports: true,
       },

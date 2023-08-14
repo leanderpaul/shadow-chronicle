@@ -18,6 +18,7 @@ export interface SidenavItem {
   icon: string;
   name: string;
   link: string;
+  activeRegex?: RegExp;
 }
 
 /**
@@ -41,7 +42,9 @@ export class SidenavItemComponent {
 
   getClassList(): string {
     const classList = [];
-    const isActive = this.item.link.replace(/\/$/, '') === window.location.pathname.replace(/\/$/, '');
+    const itemLink = this.item.link.replace(/\/$/, '');
+    const pathname = window.location.pathname.replace(/\/$/, '');
+    const isActive = itemLink === pathname || (this.item.activeRegex && this.item.activeRegex.test(pathname));
     if (isActive) classList.push('active');
     if (this.collapsed) classList.push('collapsed');
     return classList.join(' ');

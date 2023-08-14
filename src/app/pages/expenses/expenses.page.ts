@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, type PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { QueryRef } from 'apollo-angular';
 import { DateTime } from 'luxon';
 import { type Observable, type Subscription, map, tap } from 'rxjs';
@@ -78,6 +78,7 @@ const isLevel = (value?: string): value is ExpenseVisibiltyLevel => !!value && O
     IconizePipe,
     MatPaginatorModule,
     MatSnackBarModule,
+    RouterModule,
   ],
   templateUrl: './expenses.page.html',
 })
@@ -91,7 +92,7 @@ export class ExpensesPage implements OnDestroy, OnInit {
   expenseConnection: Observable<ListExpensesQuery['expenses']>;
   groupedExpenses: GroupedExpense[] = [];
 
-  filter: Filter = { levels: [ExpenseVisibiltyLevel.Standard, ExpenseVisibiltyLevel.Hidden] };
+  filter: Filter = { levels: [ExpenseVisibiltyLevel.STANDARD, ExpenseVisibiltyLevel.HIDDEN] };
   page: Pick<PageEvent, 'pageIndex' | 'pageSize'> = { pageIndex: 0, pageSize: 20 };
 
   constructor(storeService: StoreService, private readonly listExpensesGQL: ListExpensesGQL, private readonly router: Router, private readonly snackBar: MatSnackBar) {
@@ -109,7 +110,7 @@ export class ExpensesPage implements OnDestroy, OnInit {
   private getQueryVariables(): ListExpensesQueryVariables {
     const filter: ListExpensesQueryVariables['filter'] = { currency: this.currency };
     const page: ListExpensesQueryVariables['page'] = {};
-    const sortOrder = isSortOrder(this.filter.sortOrder) ? this.filter.sortOrder : SortOrder.Desc;
+    const sortOrder = isSortOrder(this.filter.sortOrder) ? this.filter.sortOrder : SortOrder.DESC;
     if (this.filter.store) filter.store = this.filter.store;
     if (this.filter.paymentMethod) filter.paymentMethod = this.filter.paymentMethod;
     if (isCategory(this.filter.category)) filter.category = this.filter.category;
@@ -157,6 +158,16 @@ export class ExpensesPage implements OnDestroy, OnInit {
     return groupedExpenses;
   }
 
+  ngOnInit(): void {
+    const variables = this.getQueryVariables();
+    this.query = this.listExpensesGQL.watch(variables, { fetchPolicy: 'no-cache' });
+    this.expenseConnection = this.query.valueChanges.pipe(
+      map(result => result.data.expenses),
+      tap(() => (this.refecting = false)),
+      tap(expenseConnection => (this.groupedExpenses = this.groupExpenses(expenseConnection?.items || []))),
+    );
+  }
+
   displayErrorMessage(component: string): void {
     this.snackBar.open(`${component} under development`, 'Dismiss', { duration: 5000, verticalPosition: 'top' });
   }
@@ -165,16 +176,6 @@ export class ExpensesPage implements OnDestroy, OnInit {
     this.filter.page = event.pageIndex > 0 ? (event.pageIndex + 1).toString() : undefined;
     this.filter.limit = event.pageSize !== 20 ? event.pageSize.toString() : undefined;
     this.router.navigate([], { queryParams: { ...this.filter } });
-  }
-
-  ngOnInit(): void {
-    const variables = this.getQueryVariables();
-    this.query = this.listExpensesGQL.watch(variables);
-    this.expenseConnection = this.query.valueChanges.pipe(
-      map(result => result.data.expenses),
-      tap(() => (this.refecting = false)),
-      tap(expenseConnection => (this.groupedExpenses = this.groupExpenses(expenseConnection?.items || []))),
-    );
   }
 
   ngOnDestroy(): void {

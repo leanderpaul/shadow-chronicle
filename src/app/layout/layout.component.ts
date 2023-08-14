@@ -28,7 +28,7 @@ const NAV_STATE_KEY = 'shadow:chronicle:side-nav';
 const initialNavState = localStorage.getItem(NAV_STATE_KEY) !== 'collapsed';
 const navItems: SidenavItem[] = [
   { name: 'Dashboard', link: '/', icon: 'home' },
-  { name: 'Expenses', icon: 'attach_money', link: '/expenses' },
+  { name: 'Expenses', icon: 'attach_money', link: '/expenses', activeRegex: /^\/expenses((\/)[a-z/]*)?/ },
   { name: 'Sleep', icon: 'hotel', link: '/sleep' },
   { name: 'Exercise', icon: 'fitness_center', link: '/exercise' },
   { name: 'Food', icon: 'restaurant', link: '/food' },

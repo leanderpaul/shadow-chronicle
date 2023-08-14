@@ -48,3 +48,16 @@ query GetExpense($eid: ID!) {
     total
   }
 }
+
+query GetUserMetadata {
+  metadata {
+    deviation
+    paymentMethods
+  }
+}
+
+mutation AddExpense($expense: AddExpenseInput!) {
+  addExpense(input: $expense) {
+    eid
+  }
+}

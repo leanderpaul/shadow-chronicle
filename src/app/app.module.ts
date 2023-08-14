@@ -7,7 +7,7 @@ import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { type Event, Router, RouterModule, type Routes, Scroll } from '@angular/router';
-import { filter, pairwise } from 'rxjs';
+import { filter, pairwise, skip, take } from 'rxjs';
 
 /**
  * Importing user defined packages
@@ -36,14 +36,14 @@ const routes: Routes = [
   { path: '**', component: NotFoundPage },
 ];
 const AppRouteModule = RouterModule.forRoot(routes);
-const verifyAuth = (authService: AuthService) => () => authService.verifyUser();
+const verifyAuth = (authService: AuthService) => () => authService.getUser().pipe(skip(1), take(1));
 
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule, AppRouteModule, BrowserAnimationsModule, HttpClientModule, LayoutComponent, GraphQLModule],
   providers: [
     { provide: APP_INITIALIZER, useFactory: verifyAuth, deps: [AuthService], multi: true },
-    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' } },
+    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline', subscriptSizing: 'dynamic' } },
   ],
   bootstrap: [AppComponent],
 })
