@@ -1,1 +1,126 @@
-<p>add-expense works!</p>
+<h1 class="text-2xl">Add Expenses</h1>
+<form [formGroup]="expenseForm">
+  <mat-card class="my-5">
+    <mat-card-content>
+      <h3 class="text-lg mb-2">Expense Details</h3>
+      <mat-divider></mat-divider>
+      <mat-grid-list class="mt-4" cols="2" rowHeight="65px" gutterSize="20px">
+        <mat-grid-tile>
+          <mat-form-field>
+            <mat-label>Date</mat-label>
+            <input matInput required type="date" formControlName="date" />
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-form-field>
+            <mat-label>Time</mat-label>
+            <input matInput type="time" formControlName="time" />
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-form-field>
+            <mat-label>Store</mat-label>
+            <input matInput required formControlName="store" [matAutocomplete]="storeAutoComplete" />
+            <mat-autocomplete #storeAutoComplete="matAutocomplete">
+              <mat-option *ngFor="let store of filteredStores" [value]="store"> {{store}} </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-form-field>
+            <mat-label>Store Location</mat-label>
+            <input matInput formControlName="storeLoc" [matAutocomplete]="storeLocAutoComplete" />
+            <mat-autocomplete #storeLocAutoComplete="matAutocomplete">
+              <mat-option *ngFor="let storeLoc of filteredStoreLocs" [value]="storeLoc"> {{storeLoc}} </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-form-field>
+            <mat-label>Category</mat-label>
+            <mat-select required formControlName="category">
+              <mat-option *ngFor="let category of categories" [value]="category">{{ category | capitalize }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-form-field>
+            <mat-label>Level</mat-label>
+            <mat-select required formControlName="level">
+              <mat-option *ngFor="let level of levels" [value]="level">{{ level | capitalize }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-form-field>
+            <mat-label>Bill ID</mat-label>
+            <input matInput formControlName="bid" />
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-form-field>
+            <mat-label>Payment Method</mat-label>
+            <input type="text" matInput [matAutocomplete]="paymentAutoComplete" formControlName="paymentMethod" />
+            <mat-autocomplete #paymentAutoComplete="matAutocomplete">
+              <mat-option *ngFor="let paymentMethod of filteredPaymentMethods" [value]="paymentMethod"> {{paymentMethod}} </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <mat-form-field class="mt-5">
+        <mat-label>Description</mat-label>
+        <textarea matInput formControlName="desc"></textarea>
+      </mat-form-field>
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="my-5">
+    <mat-card-content>
+      <h3 class="text-lg mb-2">Expense Items</h3>
+      <mat-divider></mat-divider>
+      <mat-grid-list formArrayName="items" class="mt-4" cols="6" rowHeight="65px" gutterSize="20px">
+        <div *ngFor="let item of expenseItemsForm.length | range" [formGroupName]="item">
+          <mat-grid-tile colspan="3">
+            <mat-form-field>
+              <mat-label>Item Name</mat-label>
+              <input matInput required formControlName="name" />
+            </mat-form-field>
+          </mat-grid-tile>
+          <mat-grid-tile>
+            <mat-form-field>
+              <mat-label>Quantity</mat-label>
+              <input type="number" matInput required min="0" formControlName="qty" />
+            </mat-form-field>
+          </mat-grid-tile>
+          <mat-grid-tile>
+            <mat-form-field>
+              <mat-label>Price per unit</mat-label>
+              <input matInput required type="number" min="0" formControlName="price" />
+            </mat-form-field>
+          </mat-grid-tile>
+          <mat-grid-tile>
+            <div class="item-actions">
+              <mat-icon class="icon">{{ currency | iconize: 'currency' }}</mat-icon>
+              <span class="text">{{ getTotal(item) }}</span>
+              <button type="button" class="delete" mat-icon-button [disabled]="expenseItemsForm.length === 1" (click)="expenseItemsForm.removeAt(item)">
+                <mat-icon class="text" disabled>delete</mat-icon>
+              </button>
+            </div>
+          </mat-grid-tile>
+        </div>
+      </mat-grid-list>
+      <div class="expense-actions">
+        <button type="button" (click)="addExpenseItem()" mat-stroked-button>Add Item</button>
+        <h3 class="text-lg">Total</h3>
+        <div class="total item-actions">
+          <mat-icon class="icon">{{ currency | iconize: 'currency' }}</mat-icon>
+          <span class="text">{{ getTotal() }}</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  <div class="actions">
+    <button mat-stroked-button type="button" color="warn" routerLink="/expenses">Cancel</button>
+    <button mat-stroked-button type="button" color="accent" [disabled]="!expenseForm.valid || mutating" (click)="addExpense(true)">{{ mutating ? 'Adding' : 'Add More'}}</button>
+    <button mat-raised-button type="button" color="primary" [disabled]="!expenseForm.valid || mutating" (click)="addExpense()">{{ mutating ? 'Adding' : 'Add'}}</button>
+  </div>
+</form>

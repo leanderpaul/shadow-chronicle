@@ -20,19 +20,19 @@ const CURRENCY_ICONS: Record<Currency, string> = {
   [Currency.INR]: 'currency_rupee',
 };
 const CATEGORY_ICONS: Record<ExpenseCategory, string> = {
-  [ExpenseCategory.Bills]: 'receipt_long',
-  [ExpenseCategory.Charity]: 'volunteer_activism',
-  [ExpenseCategory.EatingOut]: 'dining',
-  [ExpenseCategory.Entertainment]: 'emoji_emotions',
-  [ExpenseCategory.Family]: 'family_restroom',
-  [ExpenseCategory.General]: 'interests',
-  [ExpenseCategory.Gifts]: 'redeem',
-  [ExpenseCategory.Groceries]: 'local_grocery_store',
-  [ExpenseCategory.Holidays]: 'luggage',
-  [ExpenseCategory.PersonalCare]: 'favorite',
-  [ExpenseCategory.Shopping]: 'local_mall',
-  [ExpenseCategory.Transport]: 'directions_bus',
-  [ExpenseCategory.Unknown]: 'menu',
+  [ExpenseCategory.BILLS]: 'receipt_long',
+  [ExpenseCategory.CHARITY]: 'volunteer_activism',
+  [ExpenseCategory.EATING_OUT]: 'dining',
+  [ExpenseCategory.ENTERTAINMENT]: 'emoji_emotions',
+  [ExpenseCategory.FAMILY]: 'family_restroom',
+  [ExpenseCategory.GENERAL]: 'interests',
+  [ExpenseCategory.GIFTS]: 'redeem',
+  [ExpenseCategory.GROCERIES]: 'local_grocery_store',
+  [ExpenseCategory.HOLIDAYS]: 'luggage',
+  [ExpenseCategory.PERSONAL_CARE]: 'favorite',
+  [ExpenseCategory.SHOPPING]: 'local_mall',
+  [ExpenseCategory.TRANSPORT]: 'directions_bus',
+  [ExpenseCategory.UNKNOWN]: 'menu',
 };
 
 @Pipe({
@@ -40,9 +40,17 @@ const CATEGORY_ICONS: Record<ExpenseCategory, string> = {
   standalone: true,
 })
 export class IconizePipe implements PipeTransform {
-  transform(str: Currency, type: 'currency'): string;
-  transform(str: ExpenseCategory, type: 'category'): string;
-  transform(str: Currency | ExpenseCategory, type: 'currency' | 'category' = 'category'): string {
-    return type === 'currency' ? CURRENCY_ICONS[str as Currency] : CATEGORY_ICONS[str as ExpenseCategory];
+  private getCurrencyIcon(currency: Currency | null) {
+    return currency ? CURRENCY_ICONS[currency] : CURRENCY_ICONS[Currency.GBP];
+  }
+
+  private getCategoryIcon(category: ExpenseCategory | null) {
+    return category ? CATEGORY_ICONS[category] : CATEGORY_ICONS[ExpenseCategory.UNKNOWN];
+  }
+
+  transform(str: Currency | null, type: 'currency'): string;
+  transform(str: ExpenseCategory | null, type: 'category'): string;
+  transform(str: Currency | ExpenseCategory | null, type: 'currency' | 'category' = 'category'): string {
+    return type === 'currency' ? this.getCurrencyIcon(str as Currency | null) : this.getCategoryIcon(str as ExpenseCategory | null);
   }
 }

@@ -2,10 +2,10 @@
   <h1 class="text-2xl">Expenses</h1>
   <div>
     <button class="mr-4" mat-button (click)="displayErrorMessage('Filter')">
-      <mat-icon matBadge="8" matBadgePosition="before">filter_list</mat-icon>
+      <mat-icon [matBadge]="null" matBadgePosition="before">filter_list</mat-icon>
       <span>Filter</span>
     </button>
-    <button mat-raised-button color="primary" (click)="displayErrorMessage('Add expense')">Add Expense</button>
+    <a mat-raised-button color="primary" routerLink="add">Add Expense</a>
   </div>
 </div>
 
@@ -21,7 +21,7 @@
           <div>{{ group.label }}</div>
           <div class="mr-9 flex items-center">
             <mat-icon class="icon">{{ currency | iconize: 'currency' }}</mat-icon>
-            <span>{{ group.total / 100 }}</span>
+            <span>{{ (group.total / 100).toFixed(2) }}</span>
           </div>
         </div>
         <app-expense-list (click)="displayErrorMessage('View expense details')" [expenses]="group.expenses"></app-expense-list>
