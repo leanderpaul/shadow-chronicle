@@ -46,6 +46,8 @@ export default async function middleware(request: Request): Promise<Response> {
   }
 
   if (request.method === 'GET' && url.pathname === '/api/user') {
+    console.log(url.searchParams.toString(), request.url);
+    console.log(url);
     const user = await getCurrentUser(request.headers, url.searchParams.toString());
     return new Response(JSON.stringify(user), { headers: { 'content-type': 'application/json' } });
   }
