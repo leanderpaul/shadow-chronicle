@@ -22,7 +22,7 @@
             <mat-label>Store</mat-label>
             <input matInput required formControlName="store" [matAutocomplete]="storeAutoComplete" />
             <mat-autocomplete #storeAutoComplete="matAutocomplete">
-              <mat-option *ngFor="let store of filteredStores" [value]="store"> {{store}} </mat-option>
+              <mat-option *ngFor="let store of stores$ | async" [value]="store"> {{store}} </mat-option>
             </mat-autocomplete>
           </mat-form-field>
         </mat-grid-tile>
@@ -31,7 +31,7 @@
             <mat-label>Store Location</mat-label>
             <input matInput formControlName="storeLoc" [matAutocomplete]="storeLocAutoComplete" />
             <mat-autocomplete #storeLocAutoComplete="matAutocomplete">
-              <mat-option *ngFor="let storeLoc of filteredStoreLocs" [value]="storeLoc"> {{storeLoc}} </mat-option>
+              <mat-option *ngFor="let storeLoc of storeLoc$ | async" [value]="storeLoc"> {{storeLoc}} </mat-option>
             </mat-autocomplete>
           </mat-form-field>
         </mat-grid-tile>
@@ -60,9 +60,9 @@
         <mat-grid-tile>
           <mat-form-field>
             <mat-label>Payment Method</mat-label>
-            <input type="text" matInput [matAutocomplete]="paymentAutoComplete" formControlName="paymentMethod" />
+            <input matInput [matAutocomplete]="paymentAutoComplete" formControlName="paymentMethod" />
             <mat-autocomplete #paymentAutoComplete="matAutocomplete">
-              <mat-option *ngFor="let paymentMethod of filteredPaymentMethods" [value]="paymentMethod"> {{paymentMethod}} </mat-option>
+              <mat-option *ngFor="let paymentMethod of paymentMethods$ | async" [value]="paymentMethod"> {{paymentMethod}} </mat-option>
             </mat-autocomplete>
           </mat-form-field>
         </mat-grid-tile>
@@ -82,7 +82,10 @@
           <mat-grid-tile colspan="3">
             <mat-form-field>
               <mat-label>Item Name</mat-label>
-              <input matInput required formControlName="name" />
+              <input matInput required [matAutocomplete]="expenseItemAutoComplete" formControlName="name" />
+              <mat-autocomplete #expenseItemAutoComplete="matAutocomplete">
+                <mat-option *ngFor="let itemName of getExpenseItemSuggestions(item) | async" [value]="itemName"> {{itemName}} </mat-option>
+              </mat-autocomplete>
             </mat-form-field>
           </mat-grid-tile>
           <mat-grid-tile>
@@ -99,7 +102,7 @@
           </mat-grid-tile>
           <mat-grid-tile>
             <div class="item-actions">
-              <mat-icon class="icon">{{ currency | iconize: 'currency' }}</mat-icon>
+              <mat-icon class="icon">{{ currency$ | async | iconize: 'currency' }}</mat-icon>
               <span class="text">{{ getTotal(item) }}</span>
               <button type="button" class="delete" mat-icon-button [disabled]="expenseItemsForm.length === 1" (click)="expenseItemsForm.removeAt(item)">
                 <mat-icon class="text" disabled>delete</mat-icon>
@@ -112,15 +115,19 @@
         <button type="button" (click)="addExpenseItem()" mat-stroked-button>Add Item</button>
         <h3 class="text-lg">Total</h3>
         <div class="total item-actions">
-          <mat-icon class="icon">{{ currency | iconize: 'currency' }}</mat-icon>
+          <mat-icon class="icon">{{ currency$ | async | iconize: 'currency' }}</mat-icon>
           <span class="text">{{ getTotal() }}</span>
         </div>
       </div>
     </mat-card-content>
   </mat-card>
-  <div class="actions">
+  <div class="actions" *ngIf="mutation.getState$() | async as result">
     <button mat-stroked-button type="button" color="warn" routerLink="/expenses">Cancel</button>
-    <button mat-stroked-button type="button" color="accent" [disabled]="!expenseForm.valid || mutating" (click)="addExpense(true)">{{ mutating ? 'Adding' : 'Add More'}}</button>
-    <button mat-raised-button type="button" color="primary" [disabled]="!expenseForm.valid || mutating" (click)="addExpense()">{{ mutating ? 'Adding' : 'Add'}}</button>
+    <button mat-stroked-button type="button" color="accent" [disabled]="!expenseForm.valid || result.mutating" (click)="addExpense(true)">
+      {{ result.mutating? 'Adding' : 'Add More'}}
+    </button>
+    <button mat-raised-button type="button" color="primary" [disabled]="!expenseForm.valid || result.mutating" (click)="addExpense()">
+      {{ result.mutating ? 'Adding' : 'Add'}}
+    </button>
   </div>
 </form>

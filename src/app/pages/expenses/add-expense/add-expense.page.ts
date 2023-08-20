@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { type AbstractControl, type FormArray, FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,24 +16,19 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, type MatSnackBarConfig, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, RouterModule } from '@angular/router';
 import { DateTime } from 'luxon';
-import { type Subscription } from 'rxjs';
+import { type Observable, map } from 'rxjs';
 
 /**
  * Importing user defined packages
  */
-import { AddExpenseGQL, Currency, ExpenseCategory, ExpenseVisibiltyLevel, GetUserMetadataGQL } from '@app/graphql/operations.graphql';
+import { type AppError } from '@app/shared/app-error';
 import { CapitalizePipe, IconizePipe, RangePipe } from '@app/shared/pipes';
-import { StoreService } from '@app/shared/services';
+import { Currency, ExpenseCategory, ExpenseVisibiltyLevel, FormService, GraphQLService, StoreService } from '@app/shared/services';
+import { AddExpenseMutation, AddExpenseOperation, type ExpenseItem, GetUserMetadataOperation, type GraphQLMutation } from '@app/shared/services/graphql';
 
 /**
  * Defining types
  */
-
-interface ExpenseItem {
-  name: string;
-  price: number;
-  qty?: number;
-}
 
 /**
  * Declaring the constants
@@ -64,86 +59,70 @@ const snackbarOptions: MatSnackBarConfig = { duration: 2000, horizontalPosition:
   templateUrl: './add-expense.page.html',
   styleUrls: ['./add-expense.page.scss'],
 })
-export class AddExpensePage implements OnDestroy {
-  private paymentMethods: string[] = [];
-  private subscriptions: Subscription[] = [];
-  private stores: string[] = [];
-  private storeLocs: string[] = [];
-
+export class AddExpensePage {
+  /** Constants */
   readonly categories = [ExpenseCategory.UNKNOWN, ...Object.values(ExpenseCategory).filter(category => category !== ExpenseCategory.UNKNOWN)];
   readonly levels = Object.values(ExpenseVisibiltyLevel);
-  filteredPaymentMethods: string[] = [];
-  filteredStores: string[] = [];
-  filteredStoreLocs: string[] = [];
 
-  currency: Currency;
-  expenseForm: FormGroup;
-  expenseItemsForm: FormArray;
-  mutating = false;
+  /** Observables */
+  readonly paymentMethods$: Observable<string[]>;
+  readonly stores$: Observable<string[]>;
+  readonly storeLoc$: Observable<string[]>;
+  readonly currency$: Observable<Currency>;
+  readonly mutating$: Observable<boolean>;
+
+  /** Form State */
+  readonly expenseForm: FormGroup;
+  readonly expenseItemsForm: FormArray;
+
+  /** GraphQL Request */
+  readonly mutation: GraphQLMutation<AddExpenseMutation>;
 
   constructor(
     private readonly storeService: StoreService,
     private readonly formBuilder: FormBuilder,
     private readonly router: Router,
     private readonly snackBar: MatSnackBar,
-    private readonly getUserMetadataGQL: GetUserMetadataGQL,
-    private readonly addExpenseGQL: AddExpenseGQL,
+    private readonly formService: FormService,
+    graphqlService: GraphQLService,
   ) {
-    const userMetadata = this.getUserMetadataGQL.watch().valueChanges;
-    const userMetadata$ = userMetadata.subscribe(({ data }) => this.setPaymentMethods(data.metadata.paymentMethods));
-    this.subscriptions.push(userMetadata$);
+    /** Initializing the GraphQL requests */
+    this.mutation = graphqlService.mutation(AddExpenseOperation, null, { clearCache: [['expenses']] });
+    const paymentMethods = graphqlService
+      .query('user-metadata', GetUserMetadataOperation)
+      .getState$()
+      .pipe(map(result => result.data?.metadata?.paymentMethods ?? []));
 
+    /** Initializing the form */
     this.expenseForm = this.createExpense();
     this.expenseItemsForm = this.expenseForm.get('items') as FormArray;
-    this.setDefaultFormValues();
 
-    const paymentMethod = this.expenseForm.get('paymentMethod');
-    if (paymentMethod) {
-      const paymentMethod$ = paymentMethod.valueChanges.subscribe(value => (this.filteredPaymentMethods = this.filterResults('paymentMethods', value)));
-      this.subscriptions.push(paymentMethod$);
-    }
+    /** Initializing the observables */
+    this.currency$ = storeService.getCurrency$();
+    this.mutating$ = this.mutation.getState$().pipe(map(state => state.mutating));
 
-    this.stores = this.storeService.getStores();
-    this.filteredStores = this.stores;
-    const store = this.expenseForm.get('store');
-    if (store) {
-      const store$ = store.valueChanges.subscribe(value => (this.filteredStores = this.filterResults('stores', value)));
-      this.subscriptions.push(store$);
-    }
+    const paymentMethod = this.expenseForm.get('paymentMethod') as AbstractControl;
+    this.paymentMethods$ = formService.filterByInput(paymentMethods, paymentMethod.valueChanges);
 
-    this.storeLocs = this.storeService.getStoreLocations();
-    this.filteredStoreLocs = this.storeLocs;
-    const storeLoc = this.expenseForm.get('storeLoc');
-    if (storeLoc) {
-      const storeLoc$ = storeLoc.valueChanges.subscribe(value => (this.filteredStoreLocs = this.filterResults('storeLocs', value)));
-      this.subscriptions.push(storeLoc$);
-    }
+    const store = this.expenseForm.get('store') as AbstractControl;
+    this.stores$ = formService.filterByInput(storeService.getStore$(), store.valueChanges);
 
-    const currency$ = this.storeService.currency.subscribe(currency => (this.currency = currency));
-    this.subscriptions.push(currency$);
-  }
-
-  private setPaymentMethods(paymentMethods: string[]): void {
-    this.paymentMethods = paymentMethods;
-    const paymentMethod = this.expenseForm.get('paymentMethod')?.value ?? '';
-    this.filteredPaymentMethods = this.filterResults('paymentMethods', paymentMethod);
-  }
-
-  private filterResults(key: 'stores' | 'storeLocs' | 'paymentMethods', value?: string): string[] {
-    return this[key].filter(option => (value ? option.toLowerCase().includes(value.toLowerCase()) : true));
+    const storeLoc = this.expenseForm.get('storeLoc') as AbstractControl;
+    this.storeLoc$ = formService.filterByInput(storeService.getStoreLoc$(), storeLoc.valueChanges);
   }
 
   private createExpense(itemOnly = false): FormGroup {
     const itemForm = this.formBuilder.group({ name: ['', Validators.required], price: ['', [Validators.required, Validators.min(0.01)]], qty: [1, [Validators.min(0.01)]] });
     if (itemOnly) return itemForm;
 
-    return this.formBuilder.group({
-      date: ['', Validators.required],
-      time: [''],
+    const now = DateTime.local();
+    return this.formBuilder.nonNullable.group({
+      date: [now.toFormat('yyyy-MM-dd'), Validators.required],
+      time: [now.toFormat('T')],
       store: ['', Validators.required],
       storeLoc: [''],
-      category: ['', [Validators.required, Validators.pattern(Object.values(ExpenseCategory).join('|'))]],
-      level: ['', [Validators.required, Validators.pattern(Object.values(ExpenseVisibiltyLevel).join('|'))]],
+      category: [ExpenseCategory.UNKNOWN, [Validators.required]],
+      level: [ExpenseVisibiltyLevel.STANDARD, [Validators.required]],
       bid: [''],
       paymentMethod: [''],
       desc: [''],
@@ -151,27 +130,9 @@ export class AddExpensePage implements OnDestroy {
     });
   }
 
-  private setDefaultFormValues(): void {
-    const now = DateTime.local();
-    this.expenseForm.patchValue({
-      date: now.toFormat('yyyy-MM-dd'),
-      time: now.toFormat('T'),
-      category: ExpenseCategory.UNKNOWN,
-      level: ExpenseVisibiltyLevel.STANDARD,
-    });
-  }
-
-  private getSubTotal(item: AbstractControl): number {
-    const price = item.get('price')?.value ?? 0;
-    const qty = item.get('qty')?.value ?? 1;
-    return Math.round(price * qty * 100) / 100;
-  }
-
-  private parseExpenseItem(item: ExpenseItem): ExpenseItem {
-    const expenseItem = { ...item };
-    expenseItem.price = Math.round(expenseItem.price * 100);
-    if (expenseItem.qty === 1) delete expenseItem.qty;
-    return expenseItem;
+  getExpenseItemSuggestions(itemIndex: number): Observable<string[]> {
+    const item = this.expenseItemsForm.at(itemIndex).get('name') as AbstractControl;
+    return this.formService.filterByInput(this.storeService.getExpenseItem$(), item.valueChanges, item.value);
   }
 
   addExpenseItem(): void {
@@ -181,41 +142,36 @@ export class AddExpensePage implements OnDestroy {
   getTotal(itemIndex?: number): string {
     const itemsForm = this.expenseForm.get('items') as FormArray;
     const items = itemIndex != undefined ? [itemsForm.at(itemIndex)] : itemsForm.controls;
-    const total = items.reduce((total, item) => total + this.getSubTotal(item), 0);
+    const total = items.reduce((total, item) => {
+      const price = item.get('price')?.value ?? 0;
+      const qty = item.get('qty')?.value ?? 1;
+      const subTotal = Math.round(price * qty * 100) / 100;
+      return total + subTotal;
+    }, 0);
     return total.toFixed(2);
   }
 
   addExpense(addMore?: boolean): void {
     /** Creating the expense object */
-    const expense = { ...structuredClone(this.expenseForm.value), currency: this.currency };
+    const currency = this.storeService.getCurrency();
+    const expense = { ...structuredClone(this.expenseForm.value), currency };
     expense.date = parseInt(DateTime.fromFormat(expense.date, 'yyyy-MM-dd').toFormat('yyMMdd'));
     expense.time = parseInt(DateTime.fromFormat(expense.time, 'T').toFormat('HHmm'));
-    expense.items = expense.items.map(this.parseExpenseItem);
-    Object.keys(expense).forEach(key => typeof expense[key] === 'string' && expense[key].trim() === '' && delete expense[key]);
+    expense.items = expense.items.map((item: ExpenseItem) => ({ ...item, price: Math.round(item.price * 100) }));
     this.storeService.addStore(expense.store);
     this.storeService.addStoreLocation(expense.storeLoc);
+    expense.items.forEach((item: ExpenseItem) => this.storeService.addExpenseItem(item.name));
 
     /** Send the GraphQL mutation request */
-    this.mutating = true;
-    const subscription$ = this.addExpenseGQL.mutate({ expense }).subscribe({
-      next: () => {
-        this.mutating = false;
+    this.mutation.mutate({ expense }).subscribe({
+      complete: () => {
         this.snackBar.open('Expense added successfully', 'Close', { ...snackbarOptions, panelClass: 'success-snackbar' });
         if (addMore) {
           for (let index = 1; index < this.expenseItemsForm.length; index++) this.expenseItemsForm.removeAt(1);
           this.expenseForm.reset();
-          this.setDefaultFormValues();
         } else this.router.navigate(['expenses']);
       },
-      error: () => {
-        this.mutating = false;
-        this.snackBar.open('Failed to add expense', 'Close', { ...snackbarOptions, panelClass: 'error-snackbar' });
-      },
+      error: (error: AppError) => this.snackBar.open(error.message, 'Close', { ...snackbarOptions, panelClass: 'error-snackbar' }),
     });
-    this.subscriptions.push(subscription$);
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 }

@@ -1,0 +1,13 @@
+query GetInsight($year: Int!, $month: Int!, $currency: Currency!, $levels: [ExpenseVisibiltyLevel!]) {
+  insight(year: $year, month: $month) {
+    expense(currency: $currency, levels: $levels) {
+      total
+      billCount
+      categories {
+        name
+        total
+        billCount
+      }
+    }
+  }
+}

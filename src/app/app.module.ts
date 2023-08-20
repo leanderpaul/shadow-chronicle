@@ -13,7 +13,6 @@ import { filter, pairwise, skip, take } from 'rxjs';
  * Importing user defined packages
  */
 import { AppComponent } from './app.component';
-import { GraphQLModule } from './graphql/graphql.module';
 import { LayoutComponent } from './layout/layout.component';
 import { NotFoundPage } from './pages/not-found/not-found.page';
 import { AuthService } from './shared/services';
@@ -36,11 +35,11 @@ const routes: Routes = [
   { path: '**', component: NotFoundPage },
 ];
 const AppRouteModule = RouterModule.forRoot(routes);
-const verifyAuth = (authService: AuthService) => () => authService.getUser().pipe(skip(1), take(1));
+const verifyAuth = (authService: AuthService) => () => authService.getUser$().pipe(skip(1), take(1));
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, AppRouteModule, BrowserAnimationsModule, HttpClientModule, LayoutComponent, GraphQLModule],
+  imports: [BrowserModule, AppRouteModule, BrowserAnimationsModule, HttpClientModule, LayoutComponent],
   providers: [
     { provide: APP_INITIALIZER, useFactory: verifyAuth, deps: [AuthService], multi: true },
     { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline', subscriptSizing: 'dynamic' } },

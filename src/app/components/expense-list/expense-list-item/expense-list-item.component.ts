@@ -1,12 +1,12 @@
 /**
  * Importing npm packages
  */
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, type OnInit } from '@angular/core';
 
 /**
  * Importing user defined packages
  */
-import { ListExpensesQuery } from '@app/graphql/operations.graphql';
+import { type ListExpensesQuery } from '@app/shared/services';
 
 /**
  * Defining types

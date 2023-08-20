@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { CommonModule } from '@angular/common';
-import { Component, type OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -11,25 +11,16 @@ import { MatPaginatorModule, type PageEvent } from '@angular/material/paginator'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, RouterModule } from '@angular/router';
-import { QueryRef } from 'apollo-angular';
 import { DateTime } from 'luxon';
-import { type Observable, type Subscription, map, tap } from 'rxjs';
+import { type Observable, combineLatest, map, tap } from 'rxjs';
 
 /**
  * Importing user defined packages
  */
 import { ExpenseListModule } from '@app/components/expense-list/expense-list.module';
-import {
-  Currency,
-  ExpenseCategory,
-  ExpenseVisibiltyLevel,
-  ListExpensesGQL,
-  type ListExpensesQuery,
-  type ListExpensesQueryVariables,
-  SortOrder,
-} from '@app/graphql/operations.graphql';
 import { IconizePipe, WithLoadingPipe } from '@app/shared/pipes';
-import { StoreService } from '@app/shared/services';
+import { type GraphQLQuery, GraphQLService, ListExpensesOperation, type ListExpensesQuery, type ListExpensesQueryVariables, StoreService } from '@app/shared/services';
+import { Currency, ExpenseCategory, ExpenseVisibiltyLevel, type QueryState, SortOrder } from '@app/shared/services/graphql';
 
 /**
  * Defining types
@@ -54,9 +45,17 @@ interface Filter {
   limit?: string;
 }
 
+interface Page {
+  length: number;
+  pageIndex: number;
+  pageSize: number;
+  pageSizeOptions: number[];
+}
+
 /**
  * Declaring the constants
  */
+const DEFAULT_PAGE_LIMIT = 25;
 const isDate = (value?: string): value is string => !!value && parseInt(value) > 200101;
 const isPositiveInteger = (value?: string): value is string => !!value && parseInt(value) > 0;
 const isSortOrder = (value?: string): value is SortOrder => !!value && Object.values(SortOrder).includes(value as SortOrder);
@@ -82,61 +81,60 @@ const isLevel = (value?: string): value is ExpenseVisibiltyLevel => !!value && O
   ],
   templateUrl: './expenses.page.html',
 })
-export class ExpensesPage implements OnDestroy, OnInit {
-  private subscription: Subscription[] = [];
-  private query: QueryRef<ListExpensesQuery, ListExpensesQueryVariables>;
+export class ExpensesPage {
+  /** Constants */
+  readonly categories = [ExpenseCategory.UNKNOWN, ...Object.values(ExpenseCategory).filter(category => category !== ExpenseCategory.UNKNOWN)];
+  readonly levels = Object.values(ExpenseVisibiltyLevel);
 
-  refecting = false;
+  /** Observables */
+  readonly currency$: Observable<Currency>;
+  readonly queryParams$: Observable<Filter>;
+  readonly expenseGroups$: Observable<GroupedExpense[]>;
+  readonly page$: Observable<Page>;
 
-  currency: Currency;
-  expenseConnection: Observable<ListExpensesQuery['expenses']>;
-  groupedExpenses: GroupedExpense[] = [];
+  /** GraphQL Request */
+  readonly query: GraphQLQuery<ListExpensesQuery, ListExpensesQueryVariables>;
 
-  filter: Filter = { levels: [ExpenseVisibiltyLevel.STANDARD, ExpenseVisibiltyLevel.HIDDEN] };
-  page: Pick<PageEvent, 'pageIndex' | 'pageSize'> = { pageIndex: 0, pageSize: 20 };
+  constructor(private readonly storeService: StoreService, private readonly router: Router, private readonly snackBar: MatSnackBar, graphqlService: GraphQLService) {
+    this.query = graphqlService.query(['expenses', '{{page.limit}}-{{page.offset}}'], ListExpensesOperation, this.getQueryVariables());
 
-  constructor(storeService: StoreService, private readonly listExpensesGQL: ListExpensesGQL, private readonly router: Router, private readonly snackBar: MatSnackBar) {
-    const currency$ = storeService.currency.pipe(
-      tap(currency => (this.currency = currency)),
-      tap(() => this.refetch()),
-    );
-    const queryParams$ = router.routerState.root.queryParams.pipe(
-      tap(query => (this.filter = { ...query })),
-      tap(() => this.refetch()),
-    );
-    this.subscription.push(currency$.subscribe(), queryParams$.subscribe());
+    /** Setting up observables */
+    const refetch = () => this.query.refetch(this.getQueryVariables());
+    this.currency$ = storeService.getCurrency$().pipe(tap(refetch));
+    this.queryParams$ = router.routerState.root.queryParams.pipe(tap(refetch));
+    this.expenseGroups$ = this.query.getState$().pipe(map(this.groupExpenses));
+    this.page$ = combineLatest([this.query.getState$(), this.queryParams$]).pipe(map(this.getPagination));
   }
 
   private getQueryVariables(): ListExpensesQueryVariables {
-    const filter: ListExpensesQueryVariables['filter'] = { currency: this.currency };
-    const page: ListExpensesQueryVariables['page'] = {};
-    const sortOrder = isSortOrder(this.filter.sortOrder) ? this.filter.sortOrder : SortOrder.DESC;
-    if (this.filter.store) filter.store = this.filter.store;
-    if (this.filter.paymentMethod) filter.paymentMethod = this.filter.paymentMethod;
-    if (isCategory(this.filter.category)) filter.category = this.filter.category;
-    if (isDate(this.filter.fromDate)) filter.fromDate = parseInt(this.filter.fromDate);
-    if (isDate(this.filter.toDate)) filter.toDate = parseInt(this.filter.toDate);
-    const levels = Array.isArray(this.filter.levels) ? this.filter.levels : [this.filter.levels];
+    const currency = this.storeService.getCurrency();
+    const params: Filter = this.router.routerState.snapshot.root.queryParams;
+    const filter: ListExpensesQueryVariables['filter'] = { currency };
+    const page: ListExpensesQueryVariables['page'] = { limit: DEFAULT_PAGE_LIMIT, offset: 0 };
+    const sortOrder = isSortOrder(params.sortOrder) ? params.sortOrder : SortOrder.DESC;
+    if (params.store) filter.store = params.store;
+    if (params.paymentMethod) filter.paymentMethod = params.paymentMethod;
+    if (isCategory(params.category)) filter.category = params.category;
+    if (isDate(params.fromDate)) filter.fromDate = parseInt(params.fromDate);
+    if (isDate(params.toDate)) filter.toDate = parseInt(params.toDate);
+    const levels = Array.isArray(params.levels) ? params.levels : [params.levels];
     if (levels.every(isLevel)) filter.levels = levels;
-    if (isPositiveInteger(this.filter.limit)) {
-      page.limit = parseInt(this.filter.limit);
-      this.page.pageSize = page.limit;
-    }
-    if (isPositiveInteger(this.filter.page)) {
-      this.page.pageIndex = parseInt(this.filter.page) - 1;
-      page.offset = this.page.pageIndex * this.page.pageSize;
-    }
+    if (isPositiveInteger(params.limit)) page.limit = parseInt(params.limit);
+    if (isPositiveInteger(params.page)) page.offset = (parseInt(params.page) - 1) * (page.limit as number);
     return { filter, page, sortOrder };
   }
 
-  private refetch(): void {
-    if (!this.query) return;
-    this.refecting = true;
-    const variables = this.getQueryVariables();
-    this.query.refetch(variables);
+  private getPagination([query, params]: [QueryState<ListExpensesQuery>, Filter]): Page {
+    const length = query.data?.expenses.totalCount ?? 0;
+    const pageIndex = isPositiveInteger(params.page) ? parseInt(params.page) - 1 : 0;
+    const pageSize = isPositiveInteger(params.limit) ? parseInt(params.limit) : DEFAULT_PAGE_LIMIT;
+    const pageSizeOptions = [25, 50, 75, 100];
+    return { length, pageIndex, pageSize, pageSizeOptions };
   }
 
-  private groupExpenses(expenses: ListExpensesQuery['expenses']['items']): GroupedExpense[] {
+  private groupExpenses(query: QueryState<ListExpensesQuery>): GroupedExpense[] {
+    const expenses = query.data?.expenses.items ?? [];
+    if (!expenses.length) return [];
     const groupedExpenses: GroupedExpense[] = [];
     const now = DateTime.now();
     const today = now.toFormat('yyMMdd');
@@ -158,27 +156,14 @@ export class ExpensesPage implements OnDestroy, OnInit {
     return groupedExpenses;
   }
 
-  ngOnInit(): void {
-    const variables = this.getQueryVariables();
-    this.query = this.listExpensesGQL.watch(variables, { fetchPolicy: 'no-cache' });
-    this.expenseConnection = this.query.valueChanges.pipe(
-      map(result => result.data.expenses),
-      tap(() => (this.refecting = false)),
-      tap(expenseConnection => (this.groupedExpenses = this.groupExpenses(expenseConnection?.items || []))),
-    );
-  }
-
   displayErrorMessage(component: string): void {
     this.snackBar.open(`${component} under development`, 'Dismiss', { duration: 5000, verticalPosition: 'top' });
   }
 
   handlePageChange(event: PageEvent): void {
-    this.filter.page = event.pageIndex > 0 ? (event.pageIndex + 1).toString() : undefined;
-    this.filter.limit = event.pageSize !== 20 ? event.pageSize.toString() : undefined;
-    this.router.navigate([], { queryParams: { ...this.filter } });
-  }
-
-  ngOnDestroy(): void {
-    this.subscription.forEach(subscription => subscription.unsubscribe());
+    const queryParams: Filter = structuredClone(this.router.routerState.snapshot.root.queryParams);
+    queryParams.page = event.pageIndex > 0 ? (event.pageIndex + 1).toString() : undefined;
+    queryParams.limit = event.pageSize !== DEFAULT_PAGE_LIMIT ? event.pageSize.toString() : undefined;
+    this.router.navigate([], { queryParams });
   }
 }

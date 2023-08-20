@@ -1,0 +1,6 @@
+query GetUserMetadata {
+  metadata {
+    deviation
+    paymentMethods
+  }
+}

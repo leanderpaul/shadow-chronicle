@@ -11,7 +11,7 @@
     </div>
   </mat-sidenav>
   <mat-sidenav-content id="app-content">
-    <mat-toolbar>
+    <mat-toolbar *ngIf="user$ | async as user">
       <img *ngIf="user.imageUrl" [matMenuTriggerFor]="avatarDropdown" class="avatar" src="{{ user.imageUrl }}" alt="{{ user.name }}" width="36px" />
       <mat-icon *ngIf="!user.imageUrl" [matMenuTriggerFor]="avatarDropdown" class="avatar">account_circle</mat-icon>
       <mat-menu class="dropdown" #avatarDropdown="matMenu">
@@ -19,18 +19,18 @@
           <img *ngIf="user.imageUrl" class="user-logo" src="{{ user.imageUrl }}" alt="{{ user.name }}" width="36px" />
           <mat-icon *ngIf="!user.imageUrl" class="user-logo">account_circle</mat-icon>
           <div class="ml-3">
-            <div>{{ user.name }}</div>
-            <div class="text-sm disabled">{{ user.email }}</div>
+            <h1>{{ user.name }}</h1>
+            <h2 class="text-sm disabled">{{ user.email }}</h2>
           </div>
         </div>
         <mat-divider></mat-divider>
         <a class="!mt-1" mat-menu-item href="{{ manageAccountUrl }}">
           <mat-icon>manage_accounts</mat-icon>
-          <span>Manage your Shadow Account</span>
+          <h1>Manage your Shadow Account</h1>
         </a>
         <a mat-menu-item href="{{ logoutUrl }}">
           <mat-icon>logout</mat-icon>
-          <span>Sign Out</span>
+          <h1>Sign Out</h1>
         </a>
       </mat-menu>
     </mat-toolbar>

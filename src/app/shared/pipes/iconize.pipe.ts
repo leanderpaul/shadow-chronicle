@@ -6,7 +6,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 /**
  * Importing user defined packages
  */
-import { Currency, ExpenseCategory } from '@app/graphql/operations.graphql';
+import { Currency, ExpenseCategory } from '@app/shared/services';
 
 /**
  * Defining types

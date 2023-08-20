@@ -9,7 +9,8 @@
     "lint:fix": "ng lint --fix",
     "test": "ng test",
     "prepare": "husky install",
-    "codegen": "graphql-codegen --config codegen.ts"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "postcodegen": "prettier --write src/app/shared/services/graphql/graphql.generated.ts"
   },
   "dependencies": {
     "@angular/animations": "^16.0.0",
@@ -24,7 +25,6 @@
     "@angular/router": "^16.0.0",
     "@apollo/client": "^3.0.0",
     "@vercel/edge": "^0.3.4",
-    "apollo-angular": "^5.0.0",
     "graphql": "^16",
     "luxon": "^3.3.0",
     "rxjs": "~7.8.0",
@@ -44,7 +44,6 @@
     "@commitlint/config-conventional": "^17.6.3",
     "@graphql-codegen/cli": "5.0.0",
     "@graphql-codegen/typescript": "^4.0.1",
-    "@graphql-codegen/typescript-apollo-angular": "3.5.6",
     "@graphql-codegen/typescript-operations": "^4.0.1",
     "@types/jasmine": "~4.3.0",
     "@types/luxon": "^3.3.1",

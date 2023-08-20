@@ -1,0 +1,21 @@
+query GetExpense($eid: ID!) {
+  expense(eid: $eid) {
+    eid
+    bid
+    date
+    level
+    time
+    store
+    storeLoc
+    category
+    currency
+    paymentMethod
+    desc
+    items {
+      name
+      price
+      qty
+    }
+    total
+  }
+}

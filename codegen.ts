@@ -1,14 +1,15 @@
 import type { CodegenConfig } from '@graphql-codegen/cli';
 
+const GRAPHQL_BASE_DIR = 'src/app/shared/services/graphql';
+
 const config: CodegenConfig = {
   overwrite: true,
   schema: 'http://localhost:8080/graphql/chronicle',
-  documents: 'src/app/graphql/operations/**.gql',
+  documents: `${GRAPHQL_BASE_DIR}/**/*.gql`,
   generates: {
-    'src/app/graphql/operations.graphql.ts': {
-      plugins: ['typescript', 'typescript-operations', 'typescript-apollo-angular'],
+    [`${GRAPHQL_BASE_DIR}/graphql.generated.ts`]: {
+      plugins: ['typescript', 'typescript-operations', 'scripts/codegen.plugin.js'],
       config: {
-        addExplicitOverride: true,
         namingConvention: { enumValues: 'keep' },
         skipTypename: true,
         useTypeImports: true,
