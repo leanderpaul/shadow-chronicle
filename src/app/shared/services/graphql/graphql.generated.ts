@@ -1,7 +1,3 @@
-import { Injectable } from '@angular/core';
-import { gql } from 'apollo-angular';
-import * as Apollo from 'apollo-angular';
-
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -9,6 +5,28 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: 
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+
+function gql(literals: string | readonly string[]): string {
+  if (typeof literals === 'string') literals = [literals];
+  const query = literals[0] ?? '';
+  return query.replace(/([\s,]|#[^\n\r]+)+/g, ' ').trim();
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface GraphQLOperation<TData, TVariables> {
+  type: 'Query' | 'Mutation';
+  name?: string;
+  query: string;
+  variables?: TVariables;
+}
+
+export interface GraphQLError {
+  message: string;
+  locations: { line: number; column: number }[];
+  path: string[];
+  extensions?: Record<string, unknown>;
+}
+
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: { input: string; output: string };
@@ -367,27 +385,11 @@ export type Workout = {
   type: Scalars['String']['output'];
 };
 
-export type ListExpensesQueryVariables = Exact<{
-  filter?: InputMaybe<ExpenseFilter>;
-  page?: InputMaybe<PageInput>;
-  sortOrder?: InputMaybe<SortOrder>;
+export type AddExpenseMutationVariables = Exact<{
+  expense: AddExpenseInput;
 }>;
 
-export type ListExpensesQuery = {
-  expenses: {
-    totalCount: number;
-    items: Array<{ eid: string; date: number; level: ExpenseVisibiltyLevel; store: string; category: ExpenseCategory; currency: Currency; total: number }>;
-  };
-};
-
-export type GetInsightQueryVariables = Exact<{
-  year: Scalars['Int']['input'];
-  month: Scalars['Int']['input'];
-  currency: Currency;
-  levels?: InputMaybe<Array<ExpenseVisibiltyLevel> | ExpenseVisibiltyLevel>;
-}>;
-
-export type GetInsightQuery = { insight: { expense: { total: number; billCount: number; categories: Array<{ name: ExpenseCategory; total: number; billCount: number }> } } };
+export type AddExpenseMutation = { addExpense: { eid: string } };
 
 export type GetExpenseQueryVariables = Exact<{
   eid: Scalars['ID']['input'];
@@ -411,70 +413,43 @@ export type GetExpenseQuery = {
   } | null;
 };
 
+export type GetInsightQueryVariables = Exact<{
+  year: Scalars['Int']['input'];
+  month: Scalars['Int']['input'];
+  currency: Currency;
+  levels?: InputMaybe<Array<ExpenseVisibiltyLevel> | ExpenseVisibiltyLevel>;
+}>;
+
+export type GetInsightQuery = { insight: { expense: { total: number; billCount: number; categories: Array<{ name: ExpenseCategory; total: number; billCount: number }> } } };
+
 export type GetUserMetadataQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GetUserMetadataQuery = { metadata: { deviation: number; paymentMethods: Array<string> } };
 
-export type AddExpenseMutationVariables = Exact<{
-  expense: AddExpenseInput;
+export type ListExpensesQueryVariables = Exact<{
+  filter?: InputMaybe<ExpenseFilter>;
+  page?: InputMaybe<PageInput>;
+  sortOrder?: InputMaybe<SortOrder>;
 }>;
 
-export type AddExpenseMutation = { addExpense: { eid: string } };
+export type ListExpensesQuery = {
+  expenses: {
+    totalCount: number;
+    items: Array<{ eid: string; date: number; level: ExpenseVisibiltyLevel; store: string; category: ExpenseCategory; currency: Currency; total: number }>;
+  };
+};
 
-export const ListExpensesDocument = gql`
-  query ListExpenses($filter: ExpenseFilter, $page: PageInput, $sortOrder: SortOrder) {
-    expenses(filter: $filter, page: $page, sortOrder: $sortOrder) {
-      totalCount
-      items {
-        eid
-        date
-        level
-        store
-        category
-        currency
-        total
-      }
+const AddExpenseDocument = gql`
+  mutation AddExpense($expense: AddExpenseInput!) {
+    addExpense(input: $expense) {
+      eid
     }
   }
 `;
 
-@Injectable({
-  providedIn: 'root',
-})
-export class ListExpensesGQL extends Apollo.Query<ListExpensesQuery, ListExpensesQueryVariables> {
-  override document = ListExpensesDocument;
+export const AddExpenseOperation: GraphQLOperation<AddExpenseMutation, AddExpenseMutationVariables> = { type: 'Mutation', name: 'AddExpense', query: AddExpenseDocument };
 
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
-}
-export const GetInsightDocument = gql`
-  query GetInsight($year: Int!, $month: Int!, $currency: Currency!, $levels: [ExpenseVisibiltyLevel!]) {
-    insight(year: $year, month: $month) {
-      expense(currency: $currency, levels: $levels) {
-        total
-        billCount
-        categories {
-          name
-          total
-          billCount
-        }
-      }
-    }
-  }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class GetInsightGQL extends Apollo.Query<GetInsightQuery, GetInsightQueryVariables> {
-  override document = GetInsightDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
-}
-export const GetExpenseDocument = gql`
+const GetExpenseDocument = gql`
   query GetExpense($eid: ID!) {
     expense(eid: $eid) {
       eid
@@ -498,17 +473,27 @@ export const GetExpenseDocument = gql`
   }
 `;
 
-@Injectable({
-  providedIn: 'root',
-})
-export class GetExpenseGQL extends Apollo.Query<GetExpenseQuery, GetExpenseQueryVariables> {
-  override document = GetExpenseDocument;
+export const GetExpenseOperation: GraphQLOperation<GetExpenseQuery, GetExpenseQueryVariables> = { type: 'Query', name: 'GetExpense', query: GetExpenseDocument };
 
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+const GetInsightDocument = gql`
+  query GetInsight($year: Int!, $month: Int!, $currency: Currency!, $levels: [ExpenseVisibiltyLevel!]) {
+    insight(year: $year, month: $month) {
+      expense(currency: $currency, levels: $levels) {
+        total
+        billCount
+        categories {
+          name
+          total
+          billCount
+        }
+      }
+    }
   }
-}
-export const GetUserMetadataDocument = gql`
+`;
+
+export const GetInsightOperation: GraphQLOperation<GetInsightQuery, GetInsightQueryVariables> = { type: 'Query', name: 'GetInsight', query: GetInsightDocument };
+
+const GetUserMetadataDocument = gql`
   query GetUserMetadata {
     metadata {
       deviation
@@ -517,31 +502,27 @@ export const GetUserMetadataDocument = gql`
   }
 `;
 
-@Injectable({
-  providedIn: 'root',
-})
-export class GetUserMetadataGQL extends Apollo.Query<GetUserMetadataQuery, GetUserMetadataQueryVariables> {
-  override document = GetUserMetadataDocument;
+export const GetUserMetadataOperation: GraphQLOperation<GetUserMetadataQuery, GetUserMetadataQueryVariables> = {
+  type: 'Query',
+  name: 'GetUserMetadata',
+  query: GetUserMetadataDocument,
+};
 
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
-}
-export const AddExpenseDocument = gql`
-  mutation AddExpense($expense: AddExpenseInput!) {
-    addExpense(input: $expense) {
-      eid
+const ListExpensesDocument = gql`
+  query ListExpenses($filter: ExpenseFilter, $page: PageInput, $sortOrder: SortOrder) {
+    expenses(filter: $filter, page: $page, sortOrder: $sortOrder) {
+      totalCount
+      items {
+        eid
+        date
+        level
+        store
+        category
+        currency
+        total
+      }
     }
   }
 `;
 
-@Injectable({
-  providedIn: 'root',
-})
-export class AddExpenseGQL extends Apollo.Mutation<AddExpenseMutation, AddExpenseMutationVariables> {
-  override document = AddExpenseDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
-}
+export const ListExpensesOperation: GraphQLOperation<ListExpensesQuery, ListExpensesQueryVariables> = { type: 'Query', name: 'ListExpenses', query: ListExpensesDocument };

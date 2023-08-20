@@ -3,7 +3,7 @@
  */
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, delay, distinctUntilChanged, repeat, shareReplay, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, delay, distinctUntilChanged, repeat, tap } from 'rxjs';
 
 /**
  * Importing user defined packages
@@ -27,12 +27,17 @@ export interface User {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private userSubject = new BehaviorSubject<User>({ uid: '', name: '', email: '', verified: false, csrfToken: '' });
+  private readonly user$ = new BehaviorSubject<User>({ uid: '', name: '', email: '', verified: false, csrfToken: '' });
 
   constructor(private readonly httpClient: HttpClient) {
     this.httpClient
       .get<User>('/api/user?csrf=true')
-      .pipe(tap({ next: user => this.userSubject.next(user), error: () => this.redirectToLogin() }), delay(60 * 60 * 1000), repeat())
+      .pipe(
+        catchError(() => this.redirectToLogin()),
+        tap(user => this.user$.next(user)),
+        delay(60 * 60 * 1000),
+        repeat(),
+      )
       .subscribe();
   }
 
@@ -44,11 +49,15 @@ export class AuthService {
     throw new Error('Redirecting to login');
   }
 
-  getUser(): Observable<User> {
-    return this.userSubject.asObservable().pipe(shareReplay(1), distinctUntilChanged());
+  getUser(): User;
+  getUser<T extends keyof User>(key: T): User[T];
+  getUser<T extends keyof User>(key?: T): User | string | boolean | undefined {
+    const value = this.user$.getValue();
+    if (key) return value[key];
+    return value;
   }
 
-  getCSRFToken(): string {
-    return this.userSubject.value.csrfToken;
+  getUser$(): Observable<User> {
+    return this.user$.asObservable().pipe(distinctUntilChanged());
   }
 }

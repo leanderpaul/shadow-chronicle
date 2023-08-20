@@ -1,0 +1,14 @@
+query ListExpenses($filter: ExpenseFilter, $page: PageInput, $sortOrder: SortOrder) {
+  expenses(filter: $filter, page: $page, sortOrder: $sortOrder) {
+    totalCount
+    items {
+      eid
+      date
+      level
+      store
+      category
+      currency
+      total
+    }
+  }
+}

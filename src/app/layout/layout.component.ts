@@ -2,13 +2,14 @@
  * Importing npm packages
  */
 import { CommonModule } from '@angular/common';
-import { Component, type OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavContent, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
+import { type Observable } from 'rxjs';
 
 /**
  * Importing user defined packages
@@ -44,10 +45,11 @@ const navItems: SidenavItem[] = [
   imports: [CommonModule, RouterModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatMenuModule, MatDividerModule, SidenavItemComponent],
   standalone: true,
 })
-export class LayoutComponent implements OnInit {
+export class LayoutComponent {
   @ViewChild(MatSidenavContent) sidenav: MatSidenavContent;
 
-  user: User;
+  readonly user$: Observable<User>;
+
   logoutUrl: string;
   manageAccountUrl: string;
   isSidenavOpen = initialNavState;
@@ -58,10 +60,8 @@ export class LayoutComponent implements OnInit {
     const redirectUrl = encodeURIComponent(`https://${window.location.host}`);
     this.logoutUrl = `https://accounts.${topDomain}/auth/signout?redirectUrl=${redirectUrl}`;
     this.manageAccountUrl = `https://accounts.${topDomain}/home`;
-  }
 
-  ngOnInit(): void {
-    this.authService.getUser().subscribe(user => (this.user = user));
+    this.user$ = this.authService.getUser$();
   }
 
   getNavItems(): SidenavItem[] {

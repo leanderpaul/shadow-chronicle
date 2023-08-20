@@ -6,7 +6,7 @@ import { Component, Input } from '@angular/core';
 /**
  * Importing user defined packages
  */
-import { ListExpensesQuery } from '@app/graphql/operations.graphql';
+import { type ListExpensesQuery } from '@app/shared/services';
 
 /**
  * Defining types

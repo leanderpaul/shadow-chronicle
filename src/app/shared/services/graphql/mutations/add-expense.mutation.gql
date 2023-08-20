@@ -1,0 +1,5 @@
+mutation AddExpense($expense: AddExpenseInput!) {
+  addExpense(input: $expense) {
+    eid
+  }
+}

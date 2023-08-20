@@ -9,30 +9,31 @@
   </div>
 </div>
 
-<div *ngIf="expenseConnection | withLoading | async as result">
-  <div class="flex justify-center my-24" *ngIf="result.loading || refecting; else loaded">
+<div *ngIf="query.getState$() | async as result">
+  <div class="flex justify-center my-24" *ngIf="result.fetching; else loaded">
     <mat-spinner strokeWidth="2" diameter="50"></mat-spinner>
   </div>
   <ng-template #loaded>
     <h1 *ngIf="result.error">Error: {{ result.error }}</h1>
-    <div *ngIf="result.value">
-      <div class="my-3" *ngFor="let group of groupedExpenses">
+    <div *ngIf="result.data">
+      <div class="my-3" *ngFor="let group of expenseGroups$ | async">
         <div class="p-3 flex justify-between text-gray-300">
           <div>{{ group.label }}</div>
           <div class="mr-9 flex items-center">
-            <mat-icon class="icon">{{ currency | iconize: 'currency' }}</mat-icon>
+            <mat-icon class="icon">{{ currency$ | async | iconize: 'currency' }}</mat-icon>
             <span>{{ (group.total / 100).toFixed(2) }}</span>
           </div>
         </div>
         <app-expense-list (click)="displayErrorMessage('View expense details')" [expenses]="group.expenses"></app-expense-list>
       </div>
       <mat-paginator
+        *ngIf="page$ | async as page"
         class="!bg-inherit"
         (page)="handlePageChange($event)"
-        [length]="result.value.totalCount"
+        [length]="page.length"
         [pageIndex]="page.pageIndex"
         [pageSize]="page.pageSize"
-        [pageSizeOptions]="[20, 50, 100]"
+        [pageSizeOptions]="page.pageSizeOptions"
       ></mat-paginator>
     </div>
   </ng-template>
