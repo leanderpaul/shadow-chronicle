@@ -112,7 +112,11 @@ export class AddExpensePage {
   }
 
   private createExpense(itemOnly = false): FormGroup {
-    const itemForm = this.formBuilder.group({ name: ['', Validators.required], price: ['', [Validators.required, Validators.min(0.01)]], qty: [1, [Validators.min(0.01)]] });
+    const itemForm = this.formBuilder.nonNullable.group({
+      name: ['', Validators.required],
+      price: ['', [Validators.required, Validators.min(0.01)]],
+      qty: [1, [Validators.min(0.001)]],
+    });
     if (itemOnly) return itemForm;
 
     const now = DateTime.local();
@@ -126,7 +130,7 @@ export class AddExpensePage {
       bid: [''],
       paymentMethod: [''],
       desc: [''],
-      items: this.formBuilder.array([itemForm]),
+      items: this.formBuilder.nonNullable.array([itemForm]),
     });
   }
 
@@ -167,7 +171,7 @@ export class AddExpensePage {
       complete: () => {
         this.snackBar.open('Expense added successfully', 'Close', { ...snackbarOptions, panelClass: 'success-snackbar' });
         if (addMore) {
-          for (let index = 1; index < this.expenseItemsForm.length; index++) this.expenseItemsForm.removeAt(1);
+          for (let index = 1; index < this.expenseItemsForm.length; ) this.expenseItemsForm.removeAt(1);
           this.expenseForm.reset();
         } else this.router.navigate(['expenses']);
       },
