@@ -102,13 +102,17 @@ h3 {
   color: #bbb;
 }
 
+h4 {
+  color: #aaa;
+}
+
 body {
   margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 
 .flex-center {
-  display: flex;
+  display: flex !important;
   justify-content: center;
   align-items: center;
 }
@@ -148,10 +152,26 @@ body {
   color: #aaa;
 }
 
+.text-warn {
+  color: #f44336;
+}
+
+.text-child * {
+  color: #aaa !important;
+}
+
+.text-500-child * {
+  color: #ccc !important;
+}
+
 .success-snackbar .mdc-snackbar__surface {
   background-color: #17513f !important;
 
   & * {
     color: #ccc !important;
   }
+}
+
+table.bordered tbody tr {
+  border-bottom: 1px solid #555;
 }

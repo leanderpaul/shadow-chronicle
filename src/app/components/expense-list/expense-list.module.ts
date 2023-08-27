@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { RouterModule } from '@angular/router';
 
 /**
  * Importing user defined packages
@@ -24,7 +26,7 @@ import { ExpenseListComponent } from './expense-list.component';
 
 @NgModule({
   declarations: [ExpenseListComponent, ExpenseListItemComponent],
-  imports: [CommonModule, MatCardModule, CapitalizePipe, MatIconModule, IconizePipe],
+  imports: [CommonModule, RouterModule, MatCardModule, MatMenuModule, CapitalizePipe, MatIconModule, IconizePipe],
   exports: [ExpenseListComponent],
 })
 export class ExpenseListModule {}

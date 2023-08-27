@@ -1,0 +1,114 @@
+<div *ngIf="query.getState$() | async as result">
+  <div class="flex justify-center my-24" *ngIf="result.fetching; else loaded">
+    <mat-spinner strokeWidth="2" diameter="50"></mat-spinner>
+  </div>
+  <ng-template #loaded>
+    <app-not-found *ngIf="result.error"></app-not-found>
+    <div *ngIf="result.data?.expense as expense">
+      <div class="btn-actions">
+        <div class="flex-center">
+          <button class="flex-center text-child" mat-icon-button (click)="location.back()">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <div>
+            <h2 class="ml-4">
+              <span class="font-bold">{{ expense.store }}</span>
+            </h2>
+            <h4 class="ml-4 text-xs">
+              <span *ngIf="expense.storeLoc" class="text mr-1">{{ expense.storeLoc }},</span>
+              <span>{{ expense.date | formatter: 'date' }}</span>
+              <span class="ml-1">{{ expense.time | formatter: 'time' }}</span>
+            </h4>
+          </div>
+        </div>
+        <div class="flex-child">
+          <button mat-button color="primary">
+            <mat-icon>edit</mat-icon>
+            <span>Edit</span>
+          </button>
+          <button mat-button class="ml-4" color="warn">
+            <mat-icon>delete</mat-icon>
+            <span>Delete</span>
+          </button>
+        </div>
+      </div>
+      <mat-card class="mt-4">
+        <mat-card-content>
+          <mat-grid-list cols="4" rowHeight="50px" gutterSize="0px">
+            <mat-grid-tile>
+              <h2>Bill ID</h2>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <h1>{{ expense.bid ?? '-' }}</h1>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <h2>Category</h2>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <h1>{{ expense.category | capitalize }}</h1>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <h2>Visibility Level</h2>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <h1>{{ expense.level }}</h1>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <h2>Payment Method</h2>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <h1>{{ expense.paymentMethod }}</h1>
+            </mat-grid-tile>
+            <mat-grid-tile>
+              <h2>Description</h2>
+            </mat-grid-tile>
+            <mat-grid-tile colspan="3">
+              <h1>{{ expense.desc ?? '-' }}</h1>
+            </mat-grid-tile>
+          </mat-grid-list>
+          <table class="text-500-child mt-10 bordered" mat-table [dataSource]="parseExpenseItems(expense.items)">
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <td mat-cell *matCellDef="let item">{{ item.name }}</td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+            <ng-container matColumnDef="qty">
+              <th mat-header-cell *matHeaderCellDef>Quantity</th>
+              <td mat-cell *matCellDef="let item">{{ item.qty }}</td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+            <ng-container matColumnDef="price">
+              <th mat-header-cell *matHeaderCellDef>Unit Price</th>
+              <td mat-cell *matCellDef="let item">
+                <div>
+                  <mat-icon class="icon">{{ expense.currency | iconize: 'currency' }}</mat-icon>
+                  <span>{{ item.price }}</span>
+                </div>
+              </td>
+              <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+            <ng-container matColumnDef="total">
+              <th mat-header-cell *matHeaderCellDef>Total</th>
+              <td mat-cell *matCellDef="let item">
+                <div>
+                  <mat-icon class="icon">{{ expense.currency | iconize: 'currency' }}</mat-icon>
+                  <span>{{ item.total }}</span>
+                </div>
+              </td>
+              <td mat-footer-cell *matFooterCellDef>
+                <div class="items-center">
+                  <mat-icon class="icon font-bold">{{ expense.currency | iconize: 'currency' }}</mat-icon>
+                  <span>{{ getTotal(expense.items) }}</span>
+                </div>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columns"></tr>
+            <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+            <tr mat-footer-row *matFooterRowDef="columns"></tr>
+          </table>
+          <div></div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </ng-template>
+</div>
