@@ -24,7 +24,7 @@
             <span>{{ (group.total / 100).toFixed(2) }}</span>
           </div>
         </div>
-        <app-expense-list (click)="displayErrorMessage('View expense details')" [expenses]="group.expenses"></app-expense-list>
+        <app-expense-list [expenses]="group.expenses"></app-expense-list>
       </div>
       <mat-paginator
         *ngIf="page$ | async as page"

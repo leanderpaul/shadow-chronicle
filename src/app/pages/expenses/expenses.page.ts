@@ -18,7 +18,7 @@ import { type Observable, combineLatest, map, tap } from 'rxjs';
  * Importing user defined packages
  */
 import { ExpenseListModule } from '@app/components/expense-list/expense-list.module';
-import { IconizePipe, WithLoadingPipe } from '@app/shared/pipes';
+import { IconizePipe } from '@app/shared/pipes';
 import { type GraphQLQuery, GraphQLService, ListExpensesOperation, type ListExpensesQuery, type ListExpensesQueryVariables, StoreService } from '@app/shared/services';
 import { Currency, ExpenseCategory, ExpenseVisibiltyLevel, type QueryState, SortOrder } from '@app/shared/services/graphql';
 
@@ -68,7 +68,6 @@ const isLevel = (value?: string): value is ExpenseVisibiltyLevel => !!value && O
   imports: [
     CommonModule,
     MatProgressSpinnerModule,
-    WithLoadingPipe,
     ExpenseListModule,
     MatGridListModule,
     MatButtonModule,

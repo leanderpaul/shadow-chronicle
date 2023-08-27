@@ -13,7 +13,7 @@ import { filter, pairwise, skip, take } from 'rxjs';
  * Importing user defined packages
  */
 import { AppComponent } from './app.component';
-import { LayoutComponent } from './layout/layout.component';
+import { LayoutComponent } from './components/layout/layout.component';
 import { NotFoundPage } from './pages/not-found/not-found.page';
 import { AuthService } from './shared/services';
 
@@ -30,6 +30,7 @@ const routes: Routes = [
     children: [
       { path: '', loadComponent: () => import('./pages/expenses/expenses.page').then(m => m.ExpensesPage) },
       { path: 'add', loadComponent: () => import('./pages/expenses/add-expense/add-expense.page').then(m => m.AddExpensePage) },
+      { path: ':eid', loadComponent: () => import('./pages/expenses/[eid]/expense-details.page').then(m => m.ExpenseDetailsPage) },
     ],
   },
   { path: '**', component: NotFoundPage },

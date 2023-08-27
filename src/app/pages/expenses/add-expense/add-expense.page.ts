@@ -36,7 +36,6 @@ import { AddExpenseMutation, AddExpenseOperation, type ExpenseItem, GetUserMetad
 const snackbarOptions: MatSnackBarConfig = { duration: 2000, horizontalPosition: 'center', verticalPosition: 'top' };
 
 @Component({
-  selector: 'app-add-expense',
   standalone: true,
   imports: [
     CommonModule,

@@ -75,15 +75,19 @@ export class GraphQLQuery<TData = unknown, TVariables = unknown> {
     return this.state$.asObservable();
   }
 
-  refetch(variables?: Partial<TVariables>, skipCache?: boolean): void {
+  refetch(variables?: Partial<TVariables>, skipCache?: boolean): this {
     const newVariables = { ...this.operation.variables, ...variables } as TVariables;
     if (variables && !skipCache) {
       const cacheKey = this.getCacheKey(newVariables);
       const data = GraphQLCache.get<TData>(cacheKey);
-      if (this.state$.getValue().data === data) return;
-      if (data) return this.state$.next({ loading: false, fetching: false, data });
+      if (this.state$.getValue().data === data) return this;
+      if (data) {
+        this.state$.next({ loading: false, fetching: false, data });
+        return this;
+      }
     }
     this.state$.next({ loading: false, fetching: true });
     this.fetch(newVariables);
+    return this;
   }
 }

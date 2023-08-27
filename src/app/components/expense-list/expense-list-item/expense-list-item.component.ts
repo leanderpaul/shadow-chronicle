@@ -30,4 +30,13 @@ export class ExpenseListItemComponent implements OnInit {
   ngOnInit(): void {
     this.total = this.expense.total / 100;
   }
+
+  stopPropagation(event: MouseEvent): boolean {
+    event.stopPropagation();
+    return false;
+  }
+
+  deleteExpense(): void {
+    alert('Delete operation not yet implemented');
+  }
 }
