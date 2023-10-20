@@ -34,6 +34,10 @@ import { AddExpenseMutation, AddExpenseOperation, type ExpenseItem, GetUserMetad
  * Declaring the constants
  */
 const snackbarOptions: MatSnackBarConfig = { duration: 2000, horizontalPosition: 'center', verticalPosition: 'top' };
+const validatePrice = (control: AbstractControl): { price: number } | null => {
+  const value = parseFloat(control.value);
+  return !isNaN(value) && value === 0 ? { price: control.value } : null;
+};
 
 @Component({
   standalone: true,
@@ -113,7 +117,7 @@ export class AddExpensePage {
   private createExpense(itemOnly = false): FormGroup {
     const itemForm = this.formBuilder.nonNullable.group({
       name: ['', Validators.required],
-      price: ['', [Validators.required, Validators.min(0.01)]],
+      price: ['', [Validators.required, validatePrice]],
       qty: [1, [Validators.min(0.001)]],
     });
     if (itemOnly) return itemForm;
