@@ -94,7 +94,12 @@ export class ExpensesPage {
   /** GraphQL Request */
   readonly query: GraphQLQuery<ListExpensesQuery, ListExpensesQueryVariables>;
 
-  constructor(private readonly storeService: StoreService, private readonly router: Router, private readonly snackBar: MatSnackBar, graphqlService: GraphQLService) {
+  constructor(
+    private readonly storeService: StoreService,
+    private readonly router: Router,
+    private readonly snackBar: MatSnackBar,
+    graphqlService: GraphQLService,
+  ) {
     this.query = graphqlService.query(['expenses', '{{page.limit}}-{{page.offset}}'], ListExpensesOperation, this.getQueryVariables());
 
     /** Setting up observables */

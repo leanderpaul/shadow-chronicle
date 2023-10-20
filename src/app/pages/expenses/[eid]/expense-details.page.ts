@@ -61,7 +61,11 @@ export class ExpenseDetailsPage implements OnDestroy {
   readonly query: GraphQLQuery<GetExpenseQuery, GetExpenseQueryVariables>;
   readonly columns = ['name', 'qty', 'price', 'total'];
 
-  constructor(readonly location: Location, activatedRoute: ActivatedRoute, graphqlService: GraphQLService) {
+  constructor(
+    readonly location: Location,
+    activatedRoute: ActivatedRoute,
+    graphqlService: GraphQLService,
+  ) {
     this.eid = activatedRoute.snapshot.paramMap.get('eid') as string;
     this.query = graphqlService.query(['expense', '{{eid}}'], GetExpenseOperation, { eid: this.eid });
 

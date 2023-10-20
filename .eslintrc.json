@@ -30,6 +30,7 @@
           }
         ],
         "no-console": 2,
+        "prettier/prettier": ["error"],
         "sort-imports": ["error", { "ignoreDeclarationSort": true, "allowSeparatedGroups": true }]
       },
       "settings": {
