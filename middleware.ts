@@ -53,5 +53,6 @@ export default async function middleware(request: Request): Promise<Response> {
   /** proceed if user is authenticated and email address is verified, else redirect to accounts */
   const user = await getCurrentUser(request.headers);
   if (user?.verified) return next();
-  return Response.redirect(`https://${SHADOW_ACCOUNTS_DOMAIN}/${user ? 'verify' : 'auth/signin'}`);
+  const query = `redirect=${encodeURIComponent(request.url)}`;
+  return Response.redirect(`https://${SHADOW_ACCOUNTS_DOMAIN}/${user ? 'verify' : 'auth/signin'}?${query}`);
 }
