@@ -34,7 +34,11 @@ export interface MutationOptions {
 export class GraphQLMutation<TData = unknown, TVariables = unknown> {
   private readonly state$ = new BehaviorSubject<MutationState<TData>>({ mutating: false });
 
-  constructor(private readonly graphqlService: GraphQLService, private readonly operation: GraphQLOperation<TData, TVariables>, private readonly options: MutationOptions) {}
+  constructor(
+    private readonly graphqlService: GraphQLService,
+    private readonly operation: GraphQLOperation<TData, TVariables>,
+    private readonly options: MutationOptions,
+  ) {}
 
   private clearCache(variables?: TVariables, data?: TData) {
     if (!this.options.clearCache) return;

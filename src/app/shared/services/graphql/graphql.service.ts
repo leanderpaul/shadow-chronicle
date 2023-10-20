@@ -38,7 +38,10 @@ export class GraphQLService {
 
   private counter = 0;
 
-  constructor(private readonly httpClient: HttpClient, private readonly authService: AuthService) {}
+  constructor(
+    private readonly httpClient: HttpClient,
+    private readonly authService: AuthService,
+  ) {}
 
   private addQuery<T, U>(query: GraphQLQuery<T, U>): void {
     const weakQuery = new WeakRef(query);
